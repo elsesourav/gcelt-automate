@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link
+         href="./../assets/icons/css/font.css"
+         rel="stylesheet"
+         type="text/css"
+      />
+      <link
+         href="./../assets/icons/css/icon.css"
+         rel="stylesheet"
+         type="text/css"
+      />
+      <link href="./css/base.css" rel="stylesheet" type="text/css" />
+      <link href="./css/main.css" rel="stylesheet" type="text/css" />
+      <link href="./css/checkboxs.css" rel="stylesheet" type="text/css" />
+      <link href="./css/grid.css" rel="stylesheet" type="text/css" />
+      <link href="./css/header.css" rel="stylesheet" type="text/css" />
+      <link href="./css/footer.css" rel="stylesheet" type="text/css" />
+
+      <script defer src="./../querySelector.js"></script>
+      <script defer src="./../utils.js"></script>
+      <script defer src="./js/alert.js"></script>
+      <script defer src="./js/popup.fun.js"></script>
+      <script defer src="./js/popup.js"></script>
+   </head>
+
+   <body>
+      <div class="cover">
+         <header>
+            <div class="wrap">
+               <div class="logo">
+                  <img src="./../assets/icons/icon.png" alt="extension icon" />
+               </div>
+               <section>
+                  <p>GCELT AUTOMATE</p>
+                  <b>
+                     &copy;
+                     <span class="first">else</span>
+                     <span class="second">sourav</span>
+                     <span class="third">2025</span>
+                  </b>
+               </section>
+            </div>
+         </header>
+
+         <main>
+            <div class="basic-grid no-flip file-grid">
+               <div class="gap x2"></div>
+               <div class="show-output one-label">
+                  <span class="out-span">Manage PDF Files</span>
+               </div>
+               <div class="gap x2"></div>
+
+               <div class="take-inp files">
+                  <div class="gap x2"></div>
+                  <div class="buttons">
+                     <input
+                        type="file"
+                        id="pdfFileInput"
+                        multiple
+                        accept=".pdf"
+                        class="input-file"
+                     />
+                     <button class="btn delete-all" id="pdfDeleteButton">
+                        <span>DELETE ALL PDF</span>
+                        <i class="sbi-delete-sweep"></i>
+                     </button>
+                     <button class="btn upload" id="pdfUploadButton">
+                        <span>UPLOAD PDFS</span>
+                        <i class="sbi-upload4"></i>
+                     </button>
+                  </div>
+                  <p>All Files</p>
+                  <section class="all-files" id="allFileElementList">
+                     <!-- <div class="file">
+                        <div class="file-no">
+                           <span>1</span>
+                        </div>
+                        <div class="file-name">
+                           <span>File Name</span>
+                        </div>
+                     </div> -->
+                  </section>
+               </div>
+
+               <div class="take-inp check-box full-width">
+                  <span class="inp-span">Overwrite Existing PDF File</span>
+                  <section>
+                     <input
+                        autocomplete="off"
+                        type="checkbox"
+                        name="OVERWRITE_PDF_FILES"
+                        class="input-setting toggle"
+                     />
+                  </section>
+               </div>
+
+               <div class="gap x50"></div>
+               <div class="show-output one-label">
+                  <span class="out-span"
+                     >More exciting features coming soon!</span
+                  >
+               </div>
+               <div class="gap x2"></div>
+            </div>
+         </main>
+
+         <footer>
+            <div class="help-section">
+               <h3>Need Help?</h3>
+               <div class="contact-info">
+                  <div class="contact-item">
+                     <i class="sbi-mail"></i>
+                     <a href="mailto:elsesourav@gmail.com"
+                        >elsesourav@gmail.com</a
+                     >
+                  </div>
+                  <div class="contact-item">
+                     <i class="sbi-phone"></i>
+                     <a href="tel:+918250032643">+91 8250032643</a>
+                  </div>
+               </div>
+            </div>
+         </footer>
+      </div>
+   </body>
+</html>

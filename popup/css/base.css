@@ -1,0 +1,143 @@
+:root {
+   color-scheme: light dark;
+   --black: #111;
+   --white: #eee;
+   --switch-color-off: var(--white);
+   --switch-color-on: #85ff7a;
+
+   --ww: 400px;
+   --wh: 600px;
+
+   --s: 12px;
+   /* adjust this to control the size of switch input[type="checkbox"]*/
+
+   --grid-min: 35px;
+   --product-width: 250px;
+   --nav-height: calc(var(--s) * 10);
+   --editor-font-size: calc(var(--s) * 1.8);
+
+   --color: light-dark(#000, #fff);
+   --bg: light-dark(#fff, #000);
+
+   --bg-back: light-dark(#fff, #17132d);
+
+   user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   -webkit-user-select: none;
+
+   --bg-gradient: linear-gradient(
+      to right,
+      #a1ffce 0%,
+      #faffd1 51%,
+      #a1ffce 100%
+   );
+   @media (prefers-color-scheme: dark) {
+      --bg-gradient: linear-gradient(
+         to right,
+         #ee0979 0%,
+         #ff6a00 51%,
+         #ee0979 100%
+      );
+   }
+   
+}
+
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   -ms-overflow-style: none;
+   /* IE and Edge */
+   scrollbar-width: none;
+   /* Firefox */
+
+   /* outline: solid 1px #f004; */
+}
+
+*::-webkit-scrollbar {
+   display: none;
+}
+
+body {
+   position: relative;
+   font-family: f3;
+   width: calc(var(--ww) * 2);
+   height: calc(var(--wh));
+   overflow: hidden;
+   padding: calc(var(--s) * 2);
+   background-color: light-dark(#cbcde2, #282a38);
+   background-image: radial-gradient(light-dark(#fff5, #0003) 1px, transparent 1px),
+                     radial-gradient(light-dark(#fff7, #0005) 1px, transparent 1px);
+   background-size: 20px 20px, 40px 40px;
+
+   .cover {
+      --m: calc(var(--s) * 1.8);
+      position: relative;
+      width: calc(100% - var(--m) * 0);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: calc(var(--s) * 2);
+      overflow-x: hidden;
+      overflow-y: scroll;
+   }
+   
+}
+
+.br-tag {
+   position: relative;
+   width: calc(100% - var(--s) * 2);
+   height: 5px;
+   border-radius: 2px;
+   margin: calc(var(--s));
+   background-color: light-dark(var(--black), var(--white));
+}
+
+.gap {
+   --gap: 5px;
+   position: relative;
+   width: 100%;
+   height: var(--gap);
+   z-index: -1;
+
+   &.x2 {
+      --gap: 10px;
+   }
+   &.x3 {
+      --gap: 15px;
+   }
+   &.x4 {
+      --gap: 20px;
+   }
+   &.x5 {
+      --gap: 25px;
+   }
+   &.x6 {
+      --gap: 30px;
+   }
+   &.x7 {
+      --gap: 35px;
+   }
+   &.x8 {
+      --gap: 40px;
+   }
+   &.x9 {
+      --gap: 45px;
+   }
+   &.x10 {
+      --gap: 50px;
+   }
+   &.x30 {
+      --gap: 150px;
+   }
+   &.x50 {
+      --gap: 250px;
+   }
+}
+
+#testCanvas {
+   display: none;
+}

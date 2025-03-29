@@ -1,0 +1,52 @@
+{
+   "name": "GCELT Automating",
+   "version": "1.0.0",
+   "description": "Halp Submission PDF and many more, Coming Soon. (Copyright SouravBarui2025).",
+   "manifest_version": 3,
+   "permissions": [
+      "scripting",
+      "storage",
+      "tabs",
+      "activeTab",
+      "management",
+      "declarativeNetRequest",
+      "declarativeNetRequestFeedback",
+      "webRequest",
+      "declarativeNetRequestWithHostAccess",
+      "unlimitedStorage",
+      "offscreen"
+   ],
+   "host_permissions": ["<all_urls>"],
+   "background": {
+      "service_worker": "./backgroundScripts/background.js"
+   },
+   "content_security_policy": {
+      "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+   },
+   "content_scripts": [
+      {
+         "matches": ["<all_urls>"],
+         "js": ["./utils.js", "./querySelector.js", "./contentScripts/style.js", "./contentScripts/content.fun.js", "./contentScripts/content.js"]
+      }
+   ],
+   "web_accessible_resources": [
+      {
+         "resources": ["assets/*", "css/*"],
+         "matches": ["<all_urls>"]
+      }
+   ],
+   "action": {
+      "default_icon": {
+         "16": "assets/icons/icon.png",
+         "24": "assets/icons/icon.png",
+         "32": "assets/icons/icon.png"
+      },
+      "default_title": "ELSESOURAV",
+      "default_popup": "./popup/popup.html"
+   },
+   "icons": {
+      "16": "assets/icons/icon.png",
+      "48": "assets/icons/icon.png",
+      "128": "assets/icons/icon.png"
+   }
+}
