@@ -1,7 +1,7 @@
 {
    "name": "GCELT Automating",
    "version": "1.0.0",
-   "description": "Halp Submission PDF and many more, Coming Soon. (Copyright SouravBarui2025).",
+   "description": "Automating PDF uploads and form submissions at Makaut. (Copyright SouravBarui2025).",
    "manifest_version": 3,
    "permissions": [
       "scripting",

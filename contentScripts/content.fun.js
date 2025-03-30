@@ -7,6 +7,15 @@ function itIsUploadPage() {
    );
 }
 
+function submitPdfsUsingInjectScript() {
+   return new Promise(async (resolve) => {
+      runtimeSendMessage("c_b_inject_pdf_submission", (r) => {
+         resolve(r);
+         // console.log("Post-upload script injection successful");
+      });
+   });
+}
+
 function getPdfData() {
    return new Promise(async (resolve) => {
       const CHUNK_SIZE = 15; // Number of entries per chunk
@@ -16,8 +25,9 @@ function getPdfData() {
       let settings = null;
 
       while (hasMore) {
-         const response = await new Promise(innerResolve => {
-            runtimeSendMessage("c_b_pdf_data_request", 
+         const response = await new Promise((innerResolve) => {
+            runtimeSendMessage(
+               "c_b_pdf_data_request",
                { startIndex, endIndex: startIndex + CHUNK_SIZE },
                innerResolve
             );
@@ -32,41 +42,54 @@ function getPdfData() {
 
       resolve({
          PDFS: allPdfs,
-         SETTINGS: settings
+         SETTINGS: settings,
       });
    });
 }
 
 function clickByHuman(input) {
-   const event = new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-      detail: 1,
-      screenX: 100,
-      screenY: 100,
-   });
-   if (input) input.dispatchEvent(event);
+   try {
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      input.click();
+   } catch (error) {
+      console.log(error);
+   }
+}
+
+function clickEnterKeyOnBootbox() {
+   const modal = document.querySelector(".bootbox.modal.fade.bootbox-alert.in");
+   if (modal) {
+      document.dispatchEvent(
+         new KeyboardEvent("keydown", { key: "Enter", code: "Enter" })
+      );
+   }
 }
 
 function putPdfIntoInputFile(fileInputElement, pdfData) {
-   // Convert base64 to blob
-   const base64Response = fetch(pdfData.content);
-   base64Response
-      .then((res) => res.blob())
-      .then((blob) => {
-         // Create a File object from the blob
-         const pdfFile = new File([blob], pdfData.name, {
-            type: "application/pdf",
+   return new Promise((resolve) => {
+      const base64Response = fetch(pdfData.content);
+      base64Response
+         .then((res) => res.blob())
+         .then((blob) => {
+            // Create a File object from the blob
+            const pdfFile = new File([blob], pdfData.name, {
+               type: "application/pdf",
+            });
+
+            // Create DataTransfer and add the file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(pdfFile);
+            fileInputElement.files = dataTransfer.files;
+
+            // Dispatch change event
+            const event = new Event("change", { bubbles: true });
+            fileInputElement.dispatchEvent(event);
+
+            resolve(true);
+         })
+         .catch((error) => {
+            console.error("Error uploading PDF:", error);
+            resolve(false);
          });
-
-         // Create DataTransfer and add the file
-         const dataTransfer = new DataTransfer();
-         dataTransfer.items.add(pdfFile);
-         fileInputElement.files = dataTransfer.files;
-
-         // Dispatch change event
-         const event = new Event("change", { bubbles: true });
-         fileInputElement.dispatchEvent(event);
-      });
+   });
 }

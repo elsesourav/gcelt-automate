@@ -15,12 +15,19 @@ footer {
       flex-direction: column;
       align-items: center;
       gap: calc(var(--s));
+      padding: calc(var(--s) * 1.2);
 
       h3 {
          color: light-dark(#fff, #fff);
-         font-size: calc(var(--s) * 1.5);
+         font-size: calc(var(--s) * 1.6);
          font-family: f5b;
          margin: 0;
+         letter-spacing: 0.5px;
+         text-transform: uppercase;
+         background: linear-gradient(120deg, #7c4dff, #0460ff);
+         -webkit-background-clip: text;
+         -webkit-text-fill-color: transparent;
+         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
    }
 
@@ -29,7 +36,8 @@ footer {
       gap: calc(var(--s) * 2);
       align-items: center;
       font-size: calc(var(--s) * 1.2);
-      color: light-dark(#fff, #fff);
+      color: light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9));
+      margin-top: calc(var(--s) * 0.8);
 
       .contact-item {
          display: flex;
@@ -46,8 +54,11 @@ footer {
             transition: color 200ms;
 
             &:hover {
-               color: light-dark(#fffa, #fffa);
+               color: light-dark(#7c4dff, #448aff);
+               transform: translateY(-1px);
             }
+
+            transition: color 0.3s ease, transform 0.2s ease;
          }
       }
    }
