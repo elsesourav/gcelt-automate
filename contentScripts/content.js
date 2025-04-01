@@ -8,6 +8,7 @@ async function putPdfFiles() {
 
       const { PDFS, SETTINGS } = PDF_FILE_DATA;
       const OVERWRITE_PDF_FILES = SETTINGS?.OVERWRITE_PDF_FILES || false;
+      const SUBMIT_PDF_KEYS = [];
 
       const trElements = document.querySelectorAll("#sv-table tbody tr");
       for (let tr of trElements) {
@@ -16,6 +17,7 @@ async function putPdfFiles() {
          const studentPdfFile = PDFS?.[rollNo];
          if (!studentPdfFile) continue;
 
+         SUBMIT_PDF_KEYS.push(rollNo);
          const fileInput = tr.querySelector("input");
          // const aTag = tr.querySelector("a");
          const isAlreadyUploaded = tr.querySelector("td div a");
@@ -29,6 +31,8 @@ async function putPdfFiles() {
             fileInput.dataset.action = "";
          }
       }
+
+      uploadPdfConfirmation(SUBMIT_PDF_KEYS);
    } catch (error) {
       console.error("PDF upload process failed:", error);
    }

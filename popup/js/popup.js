@@ -59,6 +59,7 @@ pdfInput.on("change", async (e) => {
                   bad,
                   rollNumber,
                   name: file.name,
+                  submitted: false,
                   content: event.target.result,
                });
             };

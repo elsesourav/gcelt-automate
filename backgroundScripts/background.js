@@ -69,3 +69,19 @@ runtimeOnMessage("c_b_pdf_data_request", async (message, _, sendResponse) => {
       });
    }
 });
+
+runtimeOnMessage("c_b_success_upload_pdf", async (message, _, sendResponse) => {
+   try {
+      const { UPLOADED_PDF_KEYS } = message;
+      const PDF_DATA = await chromeStorageGetLocal(KEYS.STORAGE_PDF);
+
+      UPLOADED_PDF_KEYS.forEach((key) => {
+         if (PDF_DATA[key]) {
+            PDF_DATA[key].submitted = true;
+         }
+      });
+      await chromeStorageSetLocal(KEYS.STORAGE_PDF, PDF_DATA);
+   } catch (error) {
+      console.log(error);
+   }
+});

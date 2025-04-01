@@ -7,6 +7,14 @@ function itIsUploadPage() {
    );
 }
 
+function uploadPdfConfirmation(UPLOADED_PDF_KEYS) {
+   return new Promise(async (resolve) => {
+      runtimeSendMessage("c_b_success_upload_pdf", { UPLOADED_PDF_KEYS }, (r) => {
+         resolve(r);
+      });
+   });
+}
+
 function submitPdfsUsingInjectScript() {
    return new Promise(async (resolve) => {
       runtimeSendMessage("c_b_inject_pdf_submission", (r) => {
