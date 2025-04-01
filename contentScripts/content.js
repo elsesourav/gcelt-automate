@@ -7,9 +7,9 @@ async function putPdfFiles() {
       }
 
       const { PDFS, SETTINGS } = PDF_FILE_DATA;
-      const { OVERWRITE_PDF_FILES } = SETTINGS;
-      const trElements = document.querySelectorAll("#sv-table tbody tr");
+      const OVERWRITE_PDF_FILES = SETTINGS?.OVERWRITE_PDF_FILES || false;
 
+      const trElements = document.querySelectorAll("#sv-table tbody tr");
       for (let tr of trElements) {
          const rollNo = tr.querySelectorAll("td")?.[1]?.innerText;
 
@@ -29,33 +29,39 @@ async function putPdfFiles() {
             fileInput.dataset.action = "";
          }
       }
-
-      await wait(500);
-      submitPdfsUsingInjectScript();
-      
    } catch (error) {
       console.error("PDF upload process failed:", error);
    }
 }
 
 function setup_put_pdf() {
-   let putPdf;
+   let putPdf, submitPdf;
    CE(
       { id: "__fw_pdf__", class: "__fw__" },
       (putPdf = CE(
          {
             class: "__btn__",
-            "data-text": "UPLOAD & SUBMIT PDF",
+            "data-text": "UPLOAD",
             style: "--delay: 0ms",
          },
-         "UPLOAD & SUBMIT PDF"
+         "UPLOAD"
+      )),
+      (submitPdf = CE(
+         {
+            class: "__btn__",
+            "data-text": "SUBMIT",
+            style: "--delay: 400ms",
+         },
+         "SUBMIT"
       ))
    ).parent(document.body);
 
    putPdf.addEventListener("click", putPdfFiles);
+   submitPdf.addEventListener("click", submitPdfsUsingInjectScript);
 
    window.addEventListener("popstate", () => {
       putPdf.removeEventListener("click", putPdfFiles);
+      submitPdf.removeEventListener("click", submitPdfsUsingInjectScript);
    });
 }
 
