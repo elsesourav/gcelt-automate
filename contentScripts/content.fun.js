@@ -7,17 +7,46 @@ function itIsUploadPage() {
    );
 }
 
+function itIsUploadPageForCA1And2() {
+   const l = window.location.href;
+   const isExistsAnyStudentInfo = document.querySelector(
+      "#marksEntrySectionCA .well.with-header table"
+   );
+   return l.includes("ca-marks-entry") && isExistsAnyStudentInfo;
+}
+
+function itIsCA3EvaluationPage() {
+   return (
+      window.location.href.includes("makaut1.ucanapply.com") &&
+      window.location.href.includes("evaluation-ca") &&
+      window.location.href.includes("questionwise-mark-entry")
+   );
+}
+
 function uploadPdfConfirmation(UPLOADED_PDF_KEYS) {
    return new Promise(async (resolve) => {
-      runtimeSendMessage("c_b_success_upload_pdf", { UPLOADED_PDF_KEYS }, (r) => {
-         resolve(r);
-      });
+      runtimeSendMessage(
+         "c_b_success_upload_pdf",
+         { UPLOADED_PDF_KEYS },
+         (r) => {
+            resolve(r);
+         }
+      );
    });
 }
 
 function submitPdfsUsingInjectScript() {
    return new Promise(async (resolve) => {
       runtimeSendMessage("c_b_inject_pdf_submission", (r) => {
+         resolve(r);
+         // console.log("Post-upload script injection successful");
+      });
+   });
+}
+
+function readPdfAndMarksGiven() {
+   return new Promise(async (resolve) => {
+      runtimeSendMessage("c_b_inject_read_pdf_and_marks_given", (r) => {
          resolve(r);
          // console.log("Post-upload script injection successful");
       });

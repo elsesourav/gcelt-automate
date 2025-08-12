@@ -91,6 +91,19 @@ onload = async () => {
       setup_put_pdf();
    }
 
+   if (itIsCA3EvaluationPage()) {
+      async function pdfCanvasLoaded() {
+         const canvas = document.querySelector("canvas");
+         if (!canvas) {
+            return setTimeout(pdfCanvasLoaded, 1000);
+         } else {
+            await wait(1000);
+            readPdfAndMarksGiven();
+         }
+      }
+      pdfCanvasLoaded();
+   }
+
    addEventListener("mousedown", async (_) => {
       setupActionButtons();
       await wait(1000);
@@ -99,3 +112,58 @@ onload = async () => {
       setupActionButtons();
    });
 };
+
+
+/* 
+
+https://makaut1.ucanapply.com/smartexam/public/evaluator/evaluation-ca/questionwise-mark-entry/NjU5Ng==/VFMwMzM5NDA3LTY1OTYtMTAz/NTIwNDc5NQ==
+
+*/
+
+/* 
+
+function simulateDraw(startX, startY, endX, endY, steps = 10) {
+    const canvas = document.querySelector('#drawingCanvas'); // You may need to refine this selector
+    if (!canvas) {
+        console.error('Canvas not found!');
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+
+    function fire(type, x, y) {
+        const event = new MouseEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            buttons: 1,
+        });
+        canvas.dispatchEvent(event);
+    }
+
+    // Convert coordinates relative to the canvas
+    const fromX = rect.left + startX;
+    const fromY = rect.top + startY;
+    const toX = rect.left + endX;
+    const toY = rect.top + endY;
+
+    fire('mousedown', fromX, fromY);
+
+    for (let i = 1; i <= steps; i++) {
+        const x = fromX + ((toX - fromX) * i) / steps;
+        const y = fromY + ((toY - fromY) * i) / steps;
+        fire('mousemove', x, y);
+    }
+
+    fire('mouseup', toX, toY);
+}
+
+simulateDraw(10, 10, 200, 200);
+
+
+
+
+
+
+*/

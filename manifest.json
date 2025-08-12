@@ -16,7 +16,7 @@
       "unlimitedStorage",
       "offscreen"
    ],
-   "host_permissions": ["<all_urls>"],
+   "host_permissions": ["https://makaut1.ucanapply.com"],
    "background": {
       "service_worker": "./backgroundScripts/background.js"
    },
@@ -25,14 +25,14 @@
    },
    "content_scripts": [
       {
-         "matches": ["<all_urls>"],
+         "matches": ["https://makaut1.ucanapply.com/"],
          "js": ["./utils.js", "./querySelector.js", "./contentScripts/style.js", "./contentScripts/content.fun.js", "./contentScripts/content.js"]
       }
    ],
    "web_accessible_resources": [
       {
          "resources": ["assets/*", "css/*"],
-         "matches": ["<all_urls>"]
+         "matches": ["https://makaut1.ucanapply.com/*"]
       }
    ],
    "action": {
