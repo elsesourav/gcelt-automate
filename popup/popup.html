@@ -51,15 +51,15 @@
             <div class="nav-container">
                <button class="nav-tab active" data-tab="pdf-files">
                   <i class="sbi-file-pdf"></i>
-                  <span>PDF Files</span>
+                  <span>Manage PDF Files</span>
                </button>
                <button class="nav-tab" data-tab="ca1-ca2">
-                  <i class="sbi-edit"></i>
-                  <span>CA1 & CA2</span>
+                  <i class="sbi-sticky-note"></i>
+                  <span>CA1 & CA2 Settings</span>
                </button>
                <button class="nav-tab" data-tab="ca3">
-                  <i class="sbi-bookmark"></i>
-                  <span>CA3</span>
+                  <i class="sbi-edit"></i>
+                  <span>CA3 Settings</span>
                </button>
             </div>
          </nav>
@@ -68,10 +68,6 @@
             <!-- PDF Files Content -->
             <div class="tab-content active" id="pdf-files-content">
                <div class="basic-grid no-flip file-grid">
-                  <div class="gap x2"></div>
-                  <div class="show-output one-label">
-                     <span class="out-span">Manage PDF Files</span>
-                  </div>
                   <div class="gap x2"></div>
 
                   <div class="take-inp files">
@@ -93,7 +89,27 @@
                            <i class="sbi-upload4"></i>
                         </button>
                      </div>
-                     <p>All Files</p>
+
+                     <!-- Search Section -->
+                     <div class="pdf-search-wrapper">
+                        <div class="search-input-container">
+                           <i class="sbi-search search-icon"></i>
+                           <input
+                              type="text"
+                              id="pdfSearchInput"
+                              placeholder="Search PDF files..."
+                              autocomplete="off"
+                           />
+                           <button
+                              class="clear-search"
+                              id="clearSearchBtn"
+                              title="Clear search"
+                           >
+                              <i class="sbi-close"></i>
+                           </button>
+                        </div>
+                     </div>
+
                      <section class="all-files" id="allFileElementList">
                         <!-- <div class="file">
                            <div class="file-no">
@@ -117,19 +133,12 @@
                         />
                      </section>
                   </div>
-
-                  <div class="gap x10"></div>
                </div>
             </div>
 
             <!-- CA1 & CA2 Content -->
             <div class="tab-content" id="ca1-ca2-content">
                <div class="basic-grid no-flip">
-                  <div class="gap x2"></div>
-                  <div class="show-output one-label">
-                     <span class="out-span">CA1 & CA2 Settings</span>
-                  </div>
-
                   <div class="gap x2"></div>
                   <div class="take-inp full-width range-slider-container">
                      <label>Select Page Range</label>
@@ -155,8 +164,6 @@
                         />
                      </section>
                   </div>
-
-                  <div class="gap x10"></div>
                </div>
             </div>
 
@@ -164,31 +171,19 @@
             <div class="tab-content" id="ca3-content">
                <div class="basic-grid no-flip">
                   <div class="gap x2"></div>
-                  <div class="show-output one-label">
-                     <span class="out-span">CA3 Settings</span>
-                  </div>
-                  <div class="gap x2"></div>
 
                   <div class="coming-soon-container">
                      <div class="coming-soon-content">
                         <i class="sbi-time"></i>
                         <h2>Coming Soon</h2>
-                        <p>
-                           CA3 features are currently under development and will
-                           be available in the next update.
-                        </p>
                         <div class="feature-preview">
                            <div class="feature-item">
                               <i class="sbi-check-circle"></i>
-                              <span>Advanced Marking System</span>
+                              <span>Upload Files</span>
                            </div>
                            <div class="feature-item">
                               <i class="sbi-check-circle"></i>
-                              <span>Automated Grade Calculation</span>
-                           </div>
-                           <div class="feature-item">
-                              <i class="sbi-check-circle"></i>
-                              <span>Enhanced Report Generation</span>
+                              <span>Review Answers Sheet</span>
                            </div>
                         </div>
                      </div>

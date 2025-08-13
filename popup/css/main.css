@@ -3,7 +3,8 @@ main {
    --text: light-dark(#333, #ccc);
    position: relative;
    width: 100%;
-   height: 100%;
+   height: auto;
+   min-height: auto;
    display: flex;
    flex-direction: column;
 
@@ -16,7 +17,7 @@ main {
    animation: opacity linear 400ms;
    /* overflow-y: auto;
    overflow-x: hidden; */
-   
+
    @keyframes opacity {
       from {
          opacity: 0;
@@ -33,7 +34,7 @@ main .container {
    height: auto;
    opacity: 1;
    padding: calc(var(--s) * 1.5) 0;
-   
+
    transition: ease-in opacity 300ms;
 
    @starting-style {
@@ -73,11 +74,11 @@ main .container {
             place-items: center;
          }
 
-         .search-inp  {
+         .search-inp {
             position: relative;
             width: 100%;
             height: 100%;
-            
+
             input {
                position: absolute;
                width: 100%;
@@ -114,10 +115,12 @@ main .container {
 
          &.high-light {
             background: light-dark(#000, #fff);
-            * { color: #00f; }
+            * {
+               color: #00f;
+            }
          }
 
-         input[type=checkbox].btn {
+         input[type="checkbox"].btn {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -128,7 +131,7 @@ main .container {
             cursor: pointer;
          }
 
-         &:has( input[type=checkbox].btn:checked) {
+         &:has(input[type="checkbox"].btn:checked) {
             background: #00fff2;
             opacity: 1;
 
@@ -136,18 +139,18 @@ main .container {
                color: #000;
             }
          }
-   
+
          p {
             font-family: f1b;
             font-size: calc(var(--s) * 1.5);
             color: light-dark(#000, #fff);
          }
-   
+
          i {
             font-size: calc(var(--s) * 2);
             color: light-dark(#000, #fff);
          }
-   
+
          &:hover {
             opacity: 1;
             scale: 1.02;
@@ -299,7 +302,7 @@ main .container {
    height: calc(var(--s) * 3.8);
    border-radius: calc(var(--s) / 1.5);
    border: solid 1px light-dark(#0003, #fff3);
-   background-color: light-dark(#0000000A, #ffffff0A);
+   background-color: light-dark(#0000000a, #ffffff0a);
    display: grid;
    grid-template-columns: 12fr 18fr;
    justify-items: start;
@@ -344,9 +347,8 @@ main .container {
             }
          }
       }
-
    }
-   
+
    &.imp-exp {
       height: calc(var(--s) * 18) !important;
    }
@@ -380,7 +382,6 @@ main .container {
          padding: calc(var(--s) / 4);
          overflow: hidden;
 
-
          section.scroll {
             width: 100%;
             height: 100%;
@@ -395,7 +396,6 @@ main .container {
             align-items: start;
             gap: calc(var(--s) / 2);
             grid-template-rows: repeat(auto-fill, calc(var(--s) * 3));
-
 
             &.big .file {
                grid-template-columns: 8fr 6fr 1fr !important;
@@ -416,7 +416,6 @@ main .container {
                color: light-dark(#000, #fff);
                transition: background-color 200ms, color 200ms, border 200ms;
                cursor: pointer;
-
 
                &.hide {
                   display: none;
@@ -852,11 +851,11 @@ main .container {
          font-size: calc(var(--s) * 0.9);
          top: -8px;
       }
-      sect-8px{
+      sect-8px {
          border-radius: calc(var(--s) / 1.5);
          border: solid 1px light-dark(#fff5, #0005);
          background-color: light-dark(#fff4, #0004);
-      } 
+      }
 
       .out {
          position: relative;

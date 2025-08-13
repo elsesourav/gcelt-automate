@@ -16,16 +16,26 @@ function createHtmlFileElement(FILES, PARENT) {
    }
 
    for (const file of [...badFiles, ...nonSubmittedFiles, ...otherFiles]) {
-      const { name, bad } = file;
+      const { name, bad, rollNumber } = file;
       const isSubmitted = file?.submitted || false;
+      const fileKey = bad ? name : rollNumber; // Use name for bad files, rollNumber for good files
 
       html += `
-         <div class="file">
+         <div class="file" data-file-key="${fileKey}">
             <div class="file-no">
                <span>${index++}</span>
             </div>
             <div class="file-name ${bad ? "bad" : ""}">
-               <span>${name}</span>
+               <span class="file-name-text">${name}</span>
+               <input type="text" class="file-name-input" value="${name}" style="display: none;">
+            </div>
+            <div class="file-actions">
+               <button class="edit-file-btn" title="Edit filename">
+               <i class="sbi-edit-1"></i>
+               </button>
+               <button class="delete-file-btn" title="Delete file">
+               <i class="sbi-trash"></i>
+               </button>
             </div>
             <div class="file-status ${isSubmitted ? "active" : ""}">
                <i class="sbi-check-circle"></i>
@@ -34,6 +44,243 @@ function createHtmlFileElement(FILES, PARENT) {
    }
 
    PARENT[0].innerHTML = html;
+
+   // Initialize file action handlers
+   initializeFileActions();
+
+   // Initialize PDF search after creating file elements with a simple approach
+   setTimeout(() => {
+      initializePDFSearch();
+   }, 300);
+}
+
+/**
+ * Initialize edit and delete functionality for individual PDF files
+ */
+function initializeFileActions() {
+   const fileElements = document.querySelectorAll(".file");
+
+   fileElements.forEach((fileElement) => {
+      const editBtn = fileElement.querySelector(".edit-file-btn");
+      const deleteBtn = fileElement.querySelector(".delete-file-btn");
+      const fileNameText = fileElement.querySelector(".file-name-text");
+      const fileNameInput = fileElement.querySelector(".file-name-input");
+      const fileKey = fileElement.getAttribute("data-file-key");
+
+      // Edit functionality
+      if (editBtn && fileNameText && fileNameInput) {
+         editBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            startEditMode(fileElement, fileNameText, fileNameInput);
+         });
+
+         // Save on Enter, cancel on Escape
+         fileNameInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+               saveFileName(fileElement, fileNameText, fileNameInput, fileKey);
+            } else if (e.key === "Escape") {
+               cancelEdit(fileNameText, fileNameInput);
+            }
+         });
+
+         // Save on blur
+         fileNameInput.addEventListener("blur", () => {
+            saveFileName(fileElement, fileNameText, fileNameInput, fileKey);
+         });
+      }
+
+      // Delete functionality
+      if (deleteBtn) {
+         deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteFile(fileKey, fileElement);
+         });
+      }
+   });
+}
+
+function startEditMode(fileElement, fileNameText, fileNameInput) {
+   fileNameText.style.display = "none";
+   fileNameInput.style.display = "block";
+   fileNameInput.focus();
+   fileNameInput.select();
+   fileElement.classList.add("editing");
+}
+
+function cancelEdit(fileNameText, fileNameInput) {
+   fileNameText.style.display = "block";
+   fileNameInput.style.display = "none";
+   fileNameInput.value = fileNameText.textContent;
+}
+
+async function saveFileName(fileElement, fileNameText, fileNameInput, fileKey) {
+   const newName = fileNameInput.value.trim();
+   const oldName = fileNameText.textContent;
+
+   if (fileElement.dataset.saving === "true") {
+      return;
+   }
+
+   if (!newName || newName === oldName) {
+      fileNameText.style.display = "block";
+      fileNameInput.style.display = "none";
+      fileElement.classList.remove("editing");
+      return;
+   }
+
+   fileElement.dataset.saving = "true";
+
+   try {
+      const stored = (await chromeStorageGetLocal(KEYS.STORAGE_PDF)) || {};
+      const regex = /\d{11,}/g;
+      const newMatches = newName.match(regex);
+      const newRollNumber =
+         newMatches && newMatches.length > 0 ? newMatches[0] : null;
+      const newKey = newRollNumber || newName;
+
+      if (stored.hasOwnProperty(newKey) && newKey !== fileKey) {
+         fileNameInput.value = oldName;
+
+         const alert = new AlertHTML({
+            title: "Duplicate Roll Number",
+            titleColor: "#ff4444",
+            titleIcon: "sbi-warning",
+            message: `A file with this roll number already exists!`,
+            btnNm1: "OK",
+            oneBtn: true,
+         });
+         alert.show();
+         alert.clickBtn1(() => {
+            alert.hide();
+            setTimeout(() => {
+               fileNameInput.focus();
+               fileNameInput.select();
+            }, 100);
+         });
+         fileElement.dataset.saving = "false";
+         return;
+      }
+
+      let fileData = stored[fileKey];
+
+      if (!fileData) {
+         fileData = stored[oldName];
+         if (fileData) {
+            fileKey = oldName;
+         }
+      }
+
+      if (!fileData) {
+         for (const [key, data] of Object.entries(stored)) {
+            if (data.name === oldName) {
+               fileData = data;
+               fileKey = key;
+               break;
+            }
+         }
+      }
+
+      if (fileData) {
+         const oldMatches = oldName.match(regex);
+         const oldRollNumber =
+            oldMatches && oldMatches.length > 0 ? oldMatches[0] : null;
+
+         fileData.name = newName;
+
+         if (newRollNumber) {
+            fileData.rollNumber = newRollNumber;
+            fileData.bad = false;
+         } else {
+            fileData.rollNumber = null;
+            fileData.bad = true;
+         }
+
+         if (oldRollNumber !== newRollNumber) {
+            delete stored[fileKey];
+            stored[newKey] = fileData;
+            fileElement.setAttribute("data-file-key", newKey);
+         } else {
+            stored[fileKey] = fileData;
+         }
+
+         chromeStorageSetLocal(KEYS.STORAGE_PDF, stored, (success) => {
+            if (success) {
+               fileNameText.textContent = newName;
+               setTimeout(() => {
+                  createHtmlFileElement(stored, allFileElementList);
+               }, 100);
+            } else {
+               fileNameInput.value = oldName;
+            }
+            fileElement.dataset.saving = "false";
+         });
+      } else {
+         fileElement.dataset.saving = "false";
+      }
+   } catch (error) {
+      console.error("Error updating filename:", error);
+      fileNameInput.value = oldName;
+
+      const alert = new AlertHTML({
+         title: "Error",
+         titleColor: "#ff4444",
+         titleIcon: "sbi-warning",
+         message: "Error updating name. Try again.",
+         btnNm1: "OK",
+         oneBtn: true,
+      });
+      alert.show();
+      alert.clickBtn1(() => alert.hide());
+      fileElement.dataset.saving = "false";
+   }
+
+   fileNameText.style.display = "block";
+   fileNameInput.style.display = "none";
+   fileElement.classList.remove("editing");
+}
+
+function deleteFile(fileKey, fileElement) {
+   const alert = new AlertHTML({
+      title: "Delete File",
+      titleColor: "red",
+      titleIcon: "sbi-trash",
+      message: `Are you sure you want to delete this PDF file?`,
+      btnNm1: "Cancel",
+      btnNm2: "Delete",
+   });
+
+   alert.show();
+
+   alert.clickBtn1(() => {
+      alert.hide();
+   });
+
+   alert.clickBtn2(async () => {
+      alert.hide();
+
+      try {
+         // Remove from storage
+         const stored = (await chromeStorageGetLocal(KEYS.STORAGE_PDF)) || {};
+         delete stored[fileKey];
+         await chromeStorageSetLocal(KEYS.STORAGE_PDF, stored);
+
+         // Remove from DOM with animation
+         fileElement.classList.add("search-hidden");
+         setTimeout(() => {
+            fileElement.remove();
+         }, 300);
+
+         // Show success message
+         if (typeof AlertHTML !== "undefined") {
+            AlertHTML("File deleted successfully", "success", 2);
+         }
+      } catch (error) {
+         console.error("Error deleting file:", error);
+         if (typeof AlertHTML !== "undefined") {
+            AlertHTML("Error deleting file", "error", 3);
+         }
+      }
+   });
 }
 
 /**
@@ -311,4 +558,143 @@ const tabObserver = new MutationObserver((mutations) => {
 tabObserver.observe(document.body, {
    childList: true,
    subtree: true,
+});
+
+/**
+ * PDF Search System
+ * Provides real-time search functionality for PDF files
+ */
+function initializePDFSearch() {
+   const searchInput = document.getElementById("pdfSearchInput");
+   const clearButton = document.getElementById("clearSearchBtn");
+   const filesList = document.getElementById("allFileElementList");
+
+   console.log("Initializing PDF search...", {
+      searchInput: !!searchInput,
+      clearButton: !!clearButton,
+      filesList: !!filesList,
+   });
+
+   if (!searchInput || !clearButton || !filesList) {
+      console.log("PDF search elements not found - skipping initialization");
+      return;
+   }
+
+   // Remove any existing event listeners to prevent duplicates
+   const newSearchInput = searchInput.cloneNode(true);
+   const newClearButton = clearButton.cloneNode(true);
+   searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+   clearButton.parentNode.replaceChild(newClearButton, clearButton);
+
+   // Get fresh references
+   const freshSearchInput = document.getElementById("pdfSearchInput");
+   const freshClearButton = document.getElementById("clearSearchBtn");
+
+   let searchTimeout;
+
+   function performSearch(searchTerm) {
+      const files = filesList.querySelectorAll(".file");
+      const term = searchTerm.toLowerCase().trim();
+      let visibleCount = 0;
+
+      console.log(`Searching for: "${term}", Found ${files.length} files`);
+
+      // Remove existing no-results message
+      const existingMessage = filesList.querySelector(".no-results-message");
+      if (existingMessage) {
+         existingMessage.remove();
+      }
+
+      files.forEach((file) => {
+         const fileName = file.querySelector(".file-name-text");
+         if (fileName) {
+            const name = fileName.textContent.toLowerCase();
+            const matches = name.includes(term);
+
+            if (term === "" || matches) {
+               file.classList.remove("search-hidden");
+               visibleCount++;
+            } else {
+               file.classList.add("search-hidden");
+            }
+         }
+      });
+
+      // Show no results message if needed
+      if (term !== "" && visibleCount === 0) {
+         const noResultsMessage = document.createElement("div");
+         noResultsMessage.className = "no-results-message";
+         noResultsMessage.innerHTML = `
+            <i class="sbi-search"></i>
+            <p>No PDF files found matching "${searchTerm}"</p>
+         `;
+         filesList.appendChild(noResultsMessage);
+      }
+
+      // Update clear button visibility
+      if (term !== "") {
+         freshClearButton.style.opacity = "1";
+         freshClearButton.style.visibility = "visible";
+         freshClearButton.style.transform = "scale(1)";
+      } else {
+         freshClearButton.style.opacity = "0";
+         freshClearButton.style.visibility = "hidden";
+         freshClearButton.style.transform = "scale(0.8)";
+      }
+
+      console.log(`Search complete: ${visibleCount} files visible`);
+   }
+
+   // Search input event listener with debouncing
+   freshSearchInput.addEventListener("input", (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+         performSearch(e.target.value);
+      }, 200);
+   });
+
+   // Clear button functionality
+   freshClearButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      freshSearchInput.value = "";
+      performSearch("");
+      freshSearchInput.focus();
+   });
+
+   // Clear on Escape key
+   freshSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+         e.preventDefault();
+         freshSearchInput.value = "";
+         performSearch("");
+      }
+   });
+
+   // Enhanced search with Enter key
+   freshSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+         e.preventDefault();
+         performSearch(freshSearchInput.value);
+      }
+   });
+
+   console.log("PDF search initialized successfully!");
+}
+
+/**
+ * Initialize PDF search when DOM is ready
+ */
+document.addEventListener("DOMContentLoaded", () => {
+   setTimeout(() => {
+      console.log("DOM loaded - initializing PDF search");
+      initializePDFSearch();
+   }, 500);
+});
+
+// Also try to initialize when the window loads
+window.addEventListener("load", () => {
+   setTimeout(() => {
+      console.log("Window loaded - initializing PDF search");
+      initializePDFSearch();
+   }, 500);
 });

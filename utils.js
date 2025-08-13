@@ -225,15 +225,24 @@ function shuffleArray(array) {
 function chromeStorageSetLocal(key, value, callback) {
    const obj = JSON.stringify(value);
 
-   chrome.storage.local.set({ [key]: obj }).then(() => {
-      if (chrome.runtime.lastError) {
-         console.error("Error setting item:", chrome.runtime.lastError);
-      } else if (callback) {
-         callback(true);
-      } else {
-         return true;
-      }
-   });
+   chrome.storage.local
+      .set({ [key]: obj })
+      .then(() => {
+         if (chrome.runtime.lastError) {
+            console.error("Error setting item:", chrome.runtime.lastError);
+            if (callback) callback(false);
+         } else {
+            if (callback) {
+               callback(true);
+            } else {
+               return true;
+            }
+         }
+      })
+      .catch((error) => {
+         console.error("Chrome storage set failed:", error);
+         if (callback) callback(false);
+      });
 }
 
 function chromeStorageGetLocal(key, callback) {

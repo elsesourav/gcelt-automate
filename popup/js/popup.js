@@ -16,6 +16,13 @@ onload = async () => {
    SAVED_PDF = pdf;
    createHtmlFileElement(SAVED_PDF, allFileElementList);
 
+   // Initialize search after loading files
+   setTimeout(() => {
+      if (typeof initializePDFSearch === "function") {
+         initializePDFSearch();
+      }
+   }, 100);
+
    chromeStorageGetLocal(KEYS.STORAGE_POPUP_SETTINGS, (val) => {
       if (!val) {
          saveSettingData();
@@ -42,17 +49,24 @@ pdfUploadButton.click(() => pdfInput[0].click());
 
 pdfInput.on("change", async (e) => {
    const files = e.target.files;
-   const regex = /\d{11}/;
+   const regex = /\d{11,}/g; // Find continuous digit sequences of 11 or more
 
    if (files.length > 0) {
       const readFile = (file) => {
          return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (event) => {
-               const match = file.name.match(regex);
+               const matches = file.name.match(regex);
 
-               const bad = !match;
-               const rollNumber = bad ? null : match[0];
+               // Check if we found any continuous digit sequence of 11+ digits
+               let rollNumber = null;
+               let bad = true;
+
+               if (matches && matches.length > 0) {
+                  // Take the first valid sequence found
+                  rollNumber = matches[0];
+                  bad = false;
+               }
 
                return resolve({
                   bad,
@@ -71,8 +85,6 @@ pdfInput.on("change", async (e) => {
          const filePromises = Array.from(files).map((file) => readFile(file));
          const results = await Promise.all(filePromises);
 
-         console.log(results);
-
          // Store PDF files with their names
          let OLD_PDF = (await chromeStorageGetLocal(KEYS.STORAGE_PDF)) || {};
 
@@ -90,6 +102,13 @@ pdfInput.on("change", async (e) => {
          createHtmlFileElement(OLD_PDF, allFileElementList);
 
          console.log("Stored PDF files:", OLD_PDF);
+
+         // Initialize search after upload
+         setTimeout(() => {
+            if (typeof initializePDFSearch === "function") {
+               initializePDFSearch();
+            }
+         }, 100);
       } catch (error) {
          console.log("Error reading files:", error);
       }
@@ -114,6 +133,13 @@ pdfDeleteButton.click(() => {
       alert.hide();
       chromeStorageRemoveLocal(KEYS.STORAGE_PDF);
       createHtmlFileElement({}, allFileElementList);
+
+      // Initialize search after delete
+      setTimeout(() => {
+         if (typeof initializePDFSearch === "function") {
+            initializePDFSearch();
+         }
+      }, 100);
    });
 });
 
@@ -138,4 +164,3 @@ function saveSettingData() {
       chromeStorageSetLocal(KEYS.STORAGE_POPUP_SETTINGS, val);
    });
 }
-
