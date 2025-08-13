@@ -43,6 +43,9 @@ function createHtmlFileElement(FILES, PARENT) {
                <input type="text" class="file-name-input" value="${name}" style="display: none;">
             </div>
             <div class="file-actions">
+               <button class="preview-file-btn" title="Preview PDF">
+                  <i class="sbi-eye"></i>
+               </button>
                <button class="edit-file-btn" title="Edit filename">
                <i class="sbi-pencil1"></i>
                </button>
@@ -74,11 +77,20 @@ function initializeFileActions() {
    const fileElements = document.querySelectorAll(".file");
 
    fileElements.forEach((fileElement) => {
+      const previewBtn = fileElement.querySelector(".preview-file-btn");
       const editBtn = fileElement.querySelector(".edit-file-btn");
       const deleteBtn = fileElement.querySelector(".delete-file-btn");
       const fileNameText = fileElement.querySelector(".file-name-text");
       const fileNameInput = fileElement.querySelector(".file-name-input");
       const fileKey = fileElement.getAttribute("data-file-key");
+
+      // Preview functionality
+      if (previewBtn) {
+         previewBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            handlePreviewClick(fileKey);
+         });
+      }
 
       // Edit functionality
       if (editBtn && fileNameText && fileNameInput) {
@@ -707,3 +719,418 @@ window.addEventListener("load", () => {
       initializePDFSearch();
    }, 500);
 });
+
+/**
+ * PDF Preview Modal Functionality
+ */
+class PDFPreviewModal {
+   constructor() {
+      this.modal = document.getElementById("pdfPreviewModal");
+      this.overlay = document.getElementById("modalOverlay");
+      this.closeBtn = document.getElementById("modalClose");
+      this.iframe = document.getElementById("pdfPreviewFrame");
+      this.canvas = document.getElementById("pdfPreviewCanvas");
+      this.canvasContainer = document.getElementById("pdfCanvasContainer");
+      this.title = document.getElementById("modalTitle");
+
+      // Check if all elements exist
+      if (
+         !this.modal ||
+         !this.overlay ||
+         !this.closeBtn ||
+         !this.canvas ||
+         !this.title
+      ) {
+         return;
+      }
+
+      this.initEventListeners();
+   }
+
+   initEventListeners() {
+      if (!this.overlay || !this.closeBtn) return;
+
+      // Close on overlay click
+      this.overlay.addEventListener("click", () => {
+         this.close();
+      });
+
+      // Close on close button click
+      this.closeBtn.addEventListener("click", () => {
+         this.close();
+      });
+
+      // Close on Escape key
+      document.addEventListener("keydown", (e) => {
+         if (
+            e.key === "Escape" &&
+            this.modal &&
+            this.modal.style.display !== "none"
+         ) {
+            this.close();
+         }
+      });
+   }
+
+   open(fileName, pdfContent) {
+      if (!this.modal || !this.canvas || !this.title) {
+         console.error(
+            "PDF Preview Modal: Cannot open - modal elements not found"
+         );
+         return;
+      }
+
+      // Store current PDF content for fallback
+      this.currentPdfContent = pdfContent;
+      this.currentFileName = fileName;
+
+      // Clear any previous content first
+      this.canvas
+         .getContext("2d")
+         .clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      // Set title
+      this.title.textContent = `Preview: ${fileName} (First Page)`;
+
+      // Validate and fix PDF content format
+      let validPdfContent = this.validatePdfContent(pdfContent);
+
+      if (!validPdfContent) {
+         console.error("Invalid PDF content format");
+         return;
+      }
+
+      // Show modal
+      this.modal.style.display = "flex";
+
+      // Prevent body scroll
+      if (document.body) {
+         document.body.style.overflow = "hidden";
+      }
+
+      // Render first page using PDF.js
+      this.renderFirstPage(validPdfContent);
+   }
+
+   async renderFirstPage(pdfDataUrl) {
+      try {
+         // Convert data URL to Uint8Array
+         const base64Data = pdfDataUrl.split(",")[1];
+         const pdfData = atob(base64Data);
+         const uint8Array = new Uint8Array(pdfData.length);
+         for (let i = 0; i < pdfData.length; i++) {
+            uint8Array[i] = pdfData.charCodeAt(i);
+         }
+
+         // Load PDF document
+         const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+
+         // Get first page
+         const page = await pdf.getPage(1);
+
+         // Calculate scale to fit canvas
+         const viewport = page.getViewport({ scale: 1 });
+         const containerWidth = this.canvasContainer.offsetWidth - 40; // padding
+         const containerHeight = this.canvasContainer.offsetHeight - 40; // padding
+
+         const scaleX = containerWidth / viewport.width;
+         const scaleY = containerHeight / viewport.height;
+         const scale = Math.min(scaleX, scaleY, 2); // max scale of 2 for quality
+
+         const scaledViewport = page.getViewport({ scale });
+
+         // Set canvas dimensions
+         this.canvas.width = scaledViewport.width;
+         this.canvas.height = scaledViewport.height;
+
+         // Render page
+         const renderContext = {
+            canvasContext: this.canvas.getContext("2d"),
+            viewport: scaledViewport,
+         };
+
+         await page.render(renderContext).promise;
+      } catch (error) {
+         console.error("Error rendering PDF:", error);
+         // Fallback to iframe if PDF.js fails
+         this.fallbackToIframe(pdfDataUrl);
+      }
+   }
+
+   fallbackToIframe(pdfContent) {
+      // Hide canvas and show iframe
+      this.canvasContainer.style.display = "none";
+      this.iframe.style.display = "block";
+      this.iframe.src = pdfContent + "#page=1";
+   }
+
+   validatePdfContent(content) {
+      if (!content || typeof content !== "string") {
+         console.error("PDF content is not a valid string");
+         return null;
+      }
+
+      // Check if it's a data URL
+      if (content.startsWith("data:")) {
+         // Ensure it has the correct PDF MIME type
+         if (content.startsWith("data:application/pdf")) {
+            return content;
+         } else if (
+            content.startsWith("data:,") ||
+            content.startsWith("data:text/")
+         ) {
+            // Fix incorrect MIME type
+            const base64Data = content.split(",")[1];
+            return `data:application/pdf;base64,${base64Data}`;
+         } else {
+            // Try to extract base64 data and rebuild
+            const parts = content.split(",");
+            if (parts.length === 2) {
+               return `data:application/pdf;base64,${parts[1]}`;
+            }
+         }
+      }
+
+      // If it's just base64 data without data URL prefix
+      if (content.match(/^[A-Za-z0-9+/=]+$/)) {
+         return `data:application/pdf;base64,${content}`;
+      }
+
+      console.error("Unable to validate PDF content format");
+      return null;
+   }
+
+   validatePdfContent(content) {
+      if (!content || typeof content !== "string") {
+         return null;
+      }
+
+      // Check if it's a data URL
+      if (content.startsWith("data:")) {
+         // Ensure it has the correct PDF MIME type
+         if (content.startsWith("data:application/pdf")) {
+            return content;
+         } else if (
+            content.startsWith("data:,") ||
+            content.startsWith("data:text/")
+         ) {
+            // Fix incorrect MIME type
+            const base64Data = content.split(",")[1];
+            return `data:application/pdf;base64,${base64Data}`;
+         } else {
+            // Try to extract base64 data and rebuild
+            const parts = content.split(",");
+            if (parts.length === 2) {
+               return `data:application/pdf;base64,${parts[1]}`;
+            }
+         }
+      }
+
+      // If it's just base64 data without data URL prefix
+      if (content.match(/^[A-Za-z0-9+/=]+$/)) {
+         return `data:application/pdf;base64,${content}`;
+      }
+
+      return null;
+   }
+
+   showError(message) {
+      if (this.iframe) {
+         // Create an error page with option to open in new tab
+         const errorHtml = `
+            <html>
+               <body style="font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5;">
+                  <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                     <h2 style="color: #e74c3c; margin-bottom: 20px;">📄 PDF Preview Error</h2>
+                     <p style="color: #666; margin-bottom: 20px;">${message}</p>
+                     <p style="color: #999; font-size: 14px;">Try closing and reopening the preview, or check if the PDF file is valid.</p>
+                     <button onclick="parent.openPDFInNewTab()" style="
+                        background: #3498db; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 20px; 
+                        border-radius: 5px; 
+                        cursor: pointer; 
+                        margin-top: 15px;
+                        font-size: 14px;
+                     ">Open in New Tab</button>
+                  </div>
+               </body>
+            </html>
+         `;
+         this.iframe.src = `data:text/html;charset=utf-8,${encodeURIComponent(
+            errorHtml
+         )}`;
+      }
+   }
+
+   // Method to open PDF in new tab as fallback
+   openInNewTab(pdfContent) {
+      try {
+         const newWindow = window.open();
+         if (newWindow) {
+            newWindow.location.href = pdfContent;
+         } else {
+            // If popup blocked, try direct download
+            const link = document.createElement("a");
+            link.href = pdfContent;
+            link.download =
+               this.title.textContent.replace("Preview: ", "") ||
+               "document.pdf";
+            link.click();
+         }
+      } catch (error) {
+         console.error("Failed to open PDF in new tab:", error);
+      }
+   }
+
+   close() {
+      if (!this.modal) return;
+
+      // Hide modal
+      this.modal.style.display = "none";
+
+      // Clear canvas content
+      if (this.canvas) {
+         this.canvas
+            .getContext("2d")
+            .clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+
+      // Clear iframe content and reset display
+      if (this.iframe) {
+         this.iframe.src = "";
+         this.iframe.style.display = "none";
+      }
+
+      // Reset canvas container display
+      if (this.canvasContainer) {
+         this.canvasContainer.style.display = "flex";
+      }
+
+      // Clear stored content
+      this.currentPdfContent = null;
+      this.currentFileName = null;
+
+      // Restore body scroll
+      if (document.body) {
+         document.body.style.overflow = "";
+      }
+   }
+}
+
+// Initialize preview modal
+function initializePDFPreviewModal() {
+   if (!window.pdfPreviewModal) {
+      try {
+         window.pdfPreviewModal = new PDFPreviewModal();
+      } catch (error) {
+         // Silent fail
+      }
+   }
+}
+
+// Try initialization when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+   setTimeout(initializePDFPreviewModal, 200);
+});
+
+// Also try when window loads
+window.addEventListener("load", () => {
+   setTimeout(initializePDFPreviewModal, 200);
+});
+
+/**
+ * Handle preview button clicks
+ */
+function handlePreviewClick(fileKey) {
+   console.log("Preview clicked for file:", fileKey);
+
+   // Always try to get/create a fresh modal instance
+   const modal = getPDFPreviewModal();
+
+   if (!modal) {
+      console.error("Failed to get PDF Preview Modal");
+      alert("Preview not available - modal initialization failed");
+      return;
+   }
+
+   chromeStorageGetLocal(KEYS.STORAGE_PDF, (pdf) => {
+      if (pdf && pdf[fileKey]) {
+         const file = pdf[fileKey];
+         if (file.content) {
+            try {
+               console.log("Opening preview for:", file.name);
+               modal.open(file.name, file.content);
+            } catch (error) {
+               console.error("Failed to open PDF preview:", error);
+               alert("Failed to open preview");
+            }
+         } else {
+            console.error("PDF content not found for file:", file.name);
+            alert("Preview not available - PDF content not found");
+         }
+      } else {
+         console.error("File not found:", fileKey);
+         alert("File not found");
+      }
+   });
+}
+
+/**
+ * Handle preview button clicks
+ */
+function handlePreviewClick(fileKey) {
+   // Initialize modal if not already done
+   const modal = getPDFPreviewModal();
+
+   if (!modal) {
+      alert("Preview not available");
+      return;
+   }
+
+   chromeStorageGetLocal(KEYS.STORAGE_PDF, (pdf) => {
+      if (pdf && pdf[fileKey]) {
+         const file = pdf[fileKey];
+         if (file.content) {
+            modal.open(file.name, file.content);
+         } else {
+            alert("PDF content not found");
+         }
+      } else {
+         alert("File not found");
+      }
+   });
+}
+
+/**
+ * Get or create PDF Preview Modal instance
+ */
+function getPDFPreviewModal() {
+   // Check if existing modal is still valid
+   if (
+      window.pdfPreviewModal &&
+      typeof window.pdfPreviewModal.open === "function" &&
+      window.pdfPreviewModal.modal &&
+      document.getElementById("pdfPreviewModal")
+   ) {
+      return window.pdfPreviewModal;
+   }
+
+   // Create new modal instance
+   try {
+      window.pdfPreviewModal = new PDFPreviewModal();
+
+      // Validate the new instance
+      if (
+         window.pdfPreviewModal &&
+         typeof window.pdfPreviewModal.open === "function"
+      ) {
+         return window.pdfPreviewModal;
+      } else {
+         return null;
+      }
+   } catch (error) {
+      return null;
+   }
+}

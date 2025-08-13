@@ -21,7 +21,8 @@
       <link href="./css/footer.css" rel="stylesheet" type="text/css" />
 
       <script defer src="./../querySelector.js"></script>
-      <script defer src="./../offscreen/libs/jspdf.umd.min.js"></script>
+      <script defer src="./js/pdf.worker.js"></script>
+      <script defer src="./js/pdf.min.js"></script>
       <script defer src="./../utils.js"></script>
       <script defer src="./js/alert.js"></script>
       <script defer src="./js/popup.fun.js"></script>
@@ -234,6 +235,38 @@
                </div>
             </div>
          </footer>
+      </div>
+
+      <!-- PDF Preview Modal -->
+      <div class="pdf-preview-modal" id="pdfPreviewModal" style="display: none">
+         <div class="modal-overlay" id="modalOverlay"></div>
+         <div class="modal-content">
+            <div class="modal-header">
+               <h3 class="modal-title" id="modalTitle">PDF Preview</h3>
+               <button
+                  class="modal-close"
+                  id="modalClose"
+                  title="Close preview"
+               >
+                  <i class="sbi-close"></i>
+               </button>
+            </div>
+            <div class="modal-body">
+               <div id="pdfCanvasContainer" style="display: flex; justify-content: center; align-items: center; height: 100%; background: #f5f5f5;">
+                  <canvas id="pdfPreviewCanvas" style="max-width: 100%; max-height: 100%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></canvas>
+               </div>
+               <iframe
+                  id="pdfPreviewFrame"
+                  src=""
+                  width="100%"
+                  height="100%"
+                  frameborder="0"
+                  style="display: none;"
+               ></iframe>
+               >
+               </iframe>
+            </div>
+         </div>
       </div>
    </body>
 </html>
