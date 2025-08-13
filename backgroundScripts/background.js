@@ -342,22 +342,24 @@ runtimeOnMessage(
          const tabId = sender.tab.id;
 
          const result = await injectScriptInContentPage(tabId, () => {
-            const trElements =
-               document.querySelectorAll(
-                  "#marksEntrySectionCA .well.with-header table tbody tr"
-               ) || [];
+               const trElements =
+                  document.querySelectorAll(
+                     "#marksEntrySectionCA .well.with-header table tbody tr"
+                  ) || [];
 
-            for (let tr of trElements) {
-               const fileInput = tr.querySelector(
-                  `input[data-action="submit"]`
-               );
-               const aTag = tr.querySelector("a");
+               for (let tr of trElements) {
+                  const submitButton = tr.querySelector(
+                     `input[data-action="submit"]`
+                  );
+                  const fileInput = tr.querySelector("input[type='file']");
+                  const aTag = tr.querySelector("a");
+                  const isAlreadyUploaded = fileInput.files.length > 0;
 
-               if (aTag && fileInput) {
-                  aTag.dispatchEvent(new Event("change", { bubbles: true }));
-                  aTag.click();
+                  if (isAlreadyUploaded && aTag && submitButton) {
+                     aTag.dispatchEvent(new Event("change", { bubbles: true }));
+                     aTag.click();
+                  }
                }
-            }
             return true;
          });
 
@@ -460,6 +462,23 @@ runtimeOnMessage("c_b_success_upload_pdf", async (message, _, sendResponse) => {
       console.log(error);
    }
 });
+
+
+runtimeOnMessage("C_B_CREATE_RUBRICS_PDF", async (message, _, sendResponse) => {
+   try {
+      const result = await GET_RUBRICS_PDF(message?.options || {});
+
+      if (result) {
+         sendResponse({ success: true, data: result });
+      } else {
+         sendResponse({ success: false, error: "Failed to create rubrics PDF" });
+      }
+   } catch (error) {
+      console.log("Error creating rubrics PDF:", error);
+      sendResponse({ success: false, error: error.message });
+   }
+});
+
 
 setTimeout(async () => {
    // const result = await GET_RUBRICS_PDF();

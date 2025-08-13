@@ -53,6 +53,15 @@ function submitCA1PDFsUsingInjectScript() {
    });
 }
 
+function getRubricsForCA1(options) {
+   return new Promise(async (resolve) => {
+      runtimeSendMessage("C_B_CREATE_RUBRICS_PDF", { options }, (r) => {
+         resolve(r);
+         // console.log("Post-upload script injection successful");
+      });
+   });
+}
+
 
 function submitCA3PDFsUsingInjectScript() {
    return new Promise(async (resolve) => {

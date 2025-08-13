@@ -45,7 +45,7 @@ function setupUploadCA3() {
 
    let putPdf, submitPdf;
    CE(
-      { id: "__fw_pdf__", class: "__fw__" },
+      { id: "__script-active__", class: "__fw__" },
       (putPdf = CE(
          {
             class: "__btn__",

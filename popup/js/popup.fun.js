@@ -294,20 +294,6 @@ function deleteFile(fileKey, fileElement) {
          setTimeout(() => {
             fileElement.remove();
          }, 300);
-
-         // Show success message
-         if (typeof AlertHTML !== "undefined") {
-            const successAlert = new AlertHTML({
-               title: "Success",
-               titleColor: "#4caf50",
-               titleIcon: "sbi-check-circle",
-               message: "File deleted successfully",
-               btnNm1: "OK",
-               oneBtn: true,
-            });
-            successAlert.show();
-            successAlert.clickBtn1(() => successAlert.hide());
-         }
       } catch (error) {
          console.error("Error deleting file:", error);
          if (typeof AlertHTML !== "undefined") {
@@ -786,7 +772,7 @@ class PDFPreviewModal {
 
       // Clear any previous content first
       this.canvas
-         .getContext("2d")
+         .getContext("2d", { willReadFrequently: true })
          .clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       // Set title
@@ -855,7 +841,7 @@ class PDFPreviewModal {
          this.canvas.height = totalHeight;
 
          // Clear canvas
-         const ctx = this.canvas.getContext("2d");
+         const ctx = this.canvas.getContext("2d", { willReadFrequently: true });
          ctx.fillStyle = "#ffffff";
          ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -882,7 +868,9 @@ class PDFPreviewModal {
             const tempCanvas = document.createElement("canvas");
             tempCanvas.width = viewport.width;
             tempCanvas.height = viewport.height;
-            const tempCtx = tempCanvas.getContext("2d");
+            const tempCtx = tempCanvas.getContext("2d", {
+               willReadFrequently: true,
+            });
 
             // Render page to temporary canvas
             const renderContext = {
@@ -1050,7 +1038,7 @@ class PDFPreviewModal {
       // Clear canvas content
       if (this.canvas) {
          this.canvas
-            .getContext("2d")
+            .getContext("2d", { willReadFrequently: true })
             .clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
 

@@ -463,7 +463,7 @@
    border-radius: calc(var(--s) * 0.7);
    overflow: visible;
    display: grid;
-   grid-template-columns: calc(var(--s) * 4) 1fr calc(var(--s) * 4) calc(
+   grid-template-columns: calc(var(--s) * 4) 1fr calc(var(--s) * 8) calc(
          var(--s) * 3
       );
    background: light-dark(#ffffff0d, #0000000d);

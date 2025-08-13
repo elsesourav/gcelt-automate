@@ -38,7 +38,6 @@ function showConfirm(title, message, onCancel, onConfirm) {
    return confirmDialog;
 }
 
-
 // Alert Component
 function showAlert(options) {
    const {
@@ -100,15 +99,131 @@ function showAlert(options) {
    return alertDialog;
 }
 
+// PDF Preview Component
+function showPDFPreview(options) {
+   const {
+      title = null,
+      pdfContent = "",
+      fileName = "document.pdf",
+      onClose = () => {},
+   } = options;
+
+   // Use filename in title if no custom title provided
+   const modalTitle = title || `Preview: ${fileName}`;
+
+   let closeBtn, iframe, loadingDiv, errorDiv, modal;
+
+   const pdfPreview = CE(
+      { class: "__pdf-preview__" },
+      (modal = CE(
+         { class: "__modal__" },
+         CE(
+            { class: "__header__" },
+            CE({ class: "__title__" }, modalTitle),
+            (closeBtn = CE({ class: "__close__" }, "×"))
+         ),
+         CE(
+            { class: "__body__" },
+            (loadingDiv = CE(
+               { class: "__loading__" },
+               CE({ class: "__spinner__" }),
+               `Loading ${fileName}...`
+            )),
+            (errorDiv = CE(
+               { class: "__error__", style: "display: none;" },
+               CE({ class: "__icon__" }, "⚠️"),
+               "Failed to load PDF. Please try again."
+            )),
+            (iframe = CE({
+               tag: "iframe",
+               class: "__iframe__",
+               style: "display: none;",
+            }))
+         )
+      ))
+   );
+
+   // Close handlers
+   const closePDF = () => {
+      if (document.body.contains(pdfPreview)) {
+         document.body.removeChild(pdfPreview);
+      }
+      document.removeEventListener("keydown", handleEscape);
+      onClose();
+   };
+
+   closeBtn.onclick = closePDF;
+
+   // Close on backdrop click
+   pdfPreview.onclick = (e) => {
+      if (e.target === pdfPreview) {
+         closePDF();
+      }
+   };
+
+   // Close on Escape key
+   const handleEscape = (e) => {
+      if (e.key === "Escape") {
+         closePDF();
+      }
+   };
+   document.addEventListener("keydown", handleEscape);
+
+   // Validate PDF content
+   function validatePdfContent(content) {
+      if (!content || typeof content !== "string") return null;
+
+      if (content.startsWith("data:application/pdf")) {
+         return content;
+      } else if (content.startsWith("data:")) {
+         const base64Data = content.split(",")[1];
+         return `data:application/pdf;base64,${base64Data}`;
+      } else if (content.match(/^[A-Za-z0-9+/=]+$/)) {
+         return `data:application/pdf;base64,${content}`;
+      }
+
+      return null;
+   }
+
+   // Load PDF in iframe
+   function loadPDF() {
+      const validPdfContent = validatePdfContent(pdfContent);
+
+      if (validPdfContent) {
+         // Hide loading and error, show iframe
+         loadingDiv.style.display = "none";
+         errorDiv.style.display = "none";
+         iframe.style.display = "block";
+         iframe.src = validPdfContent;
+      } else {
+         // Show error
+         loadingDiv.style.display = "none";
+         iframe.style.display = "none";
+         errorDiv.style.display = "flex";
+      }
+   }
+
+   // Add PDF to DOM and load
+   document.body.appendChild(pdfPreview);
+
+   // Start loading after a short delay
+   setTimeout(loadPDF, 100);
+
+   return {
+      element: pdfPreview,
+      close: closePDF,
+   };
+}
+
 function setupActionButtons() {
-   const fwPdf = I("#__fw_pdf__")[0];
+   const fwPdf = I("#__script-active__")[0];
    const isFwPdf = fwPdf instanceof Node;
 
    if (!isFwPdf) {
       if (itIsUploadPageForCA3()) {
          setupUploadCA3();
       } else if (itIsUploadPageForCA1()) {
-         setupUploadCA1();
+         setupScriptForCA1();
       }
    } else if (isFwPdf && (itIsUploadPageForCA3() || itIsUploadPageForCA1())) {
       fwPdf.style.display = "flex";
@@ -122,7 +237,7 @@ onload = async () => {
    if (itIsUploadPageForCA3()) {
       setupUploadCA3();
    } else if (itIsUploadPageForCA1()) {
-      setupUploadCA1();
+      setupScriptForCA1();
    }
 
    if (itIsCA3EvaluationPage()) {

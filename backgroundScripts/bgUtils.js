@@ -21,17 +21,17 @@ function ensureOffscreen() {
    });
 }
 
-async function GET_RUBRICS_PDF(data) {
+async function GET_RUBRICS_PDF(options) {
    return new Promise(async (resolve) => {
       await ensureOffscreen();
       await wait(100);
 
-      runtimeSendMessage("C_OF_GET_RUBRICS_PDF", data, (res) => {
+      runtimeSendMessage("C_OF_GET_RUBRICS_PDF", { options }, (res) => {
          if (res.success) {
-            resolve(res.data);
+            resolve(res);
          } else {
             console.error("Failed to get rubrics PDF:", res.message);
-            resolve(null);
+            resolve(res.message);
          }
       });
    });

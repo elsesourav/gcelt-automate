@@ -1,10 +1,10 @@
 runtimeOnMessage("C_OF_GET_RUBRICS_PDF", async (data, _, sendResponse) => {
 try {
-      const { options } = data;
-   
-      const rubrics = new RubricsPDF({
-         orientation: "portrait",
-         margin: 8,
+   const { options } = data;
+
+   const rubrics = new RubricsPDF({
+      orientation: "portrait",
+      margin: 8,
          rowHeight: 8,
          headerHeight: 12,
          fontSize: {
@@ -26,9 +26,9 @@ try {
          },
       });
    
-      const pdfBlob = rubrics.createPDF(options);
-      const dataURL = blobToDataURL(pdfBlob);
-      
+      const pdfBlob = await rubrics.createPDF(options);
+      const dataURL = await blobToDataURL(pdfBlob);
+
       sendResponse({ success: true, dataURL });
 } catch (error) {
    console.log("Error generating PDF:", error);

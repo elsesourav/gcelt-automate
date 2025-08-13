@@ -39,12 +39,12 @@ function CE(first, ...children) {
       }
    } else if (typeof first === "string" || typeof first === "number") {
       element = document.createElement("div");
-      element.innerText = first;
+      element.innerHTML = first;
    }
 
    children.forEach((child) => {
       if (typeof child === "string" || typeof child === "number") {
-         element.innerText = child;
+         element.innerHTML = child;
       } else if (child instanceof Node) {
          element.appendChild(child);
       }
@@ -508,6 +508,18 @@ const blobToDataURL = async (blob) => {
    });
 };
 
+// download blob pdf
+function downloadBlobPDF(blob, filename) {
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement("a");
+   link.href = url;
+   link.download = filename || "rubrics_document.pdf";
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
+   URL.revokeObjectURL(url);
+}
+
 const extractRollAndName = (string) => {
    let match = string.match(/^\s*(\d+)\s*(?:-\s*)?(.*)$/);
 
@@ -516,3 +528,41 @@ const extractRollAndName = (string) => {
    }
    return null;
 };
+
+function getRandomMarks(min, max) {
+   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function distributeMarks(total) {
+   const result = [0, 0, 0, 0, 0];
+   let remaining = Math.min(total, 25); // max possible 5×5
+
+   while (remaining > 0) {
+      let i = Math.floor(Math.random() * 5); // pick a random slot
+      if (result[i] < 5) {
+         // ensure max 5 per slot
+         result[i]++;
+         remaining--;
+      }
+   }
+
+   return result;
+}
+
+// Example usage
+// console.log(distributeMarks(12)); // e.g., [3, 1, 4, 2, 2]
+// console.log(distributeMarks(20)); // e.g., [5, 4, 3, 5, 3]
+// console.log(distributeMarks(7));  // e.g., [2, 1, 2, 0, 2]
+
+function getInsideParentheses(str) {
+   let match = str.match(/\((.*?)\)/);
+   return match ? match[1]?.trim() : null;
+}
+
+function getOutsideParentheses(str) {
+   return str.replace(/\(.*?\)/, "").trim();
+}
+
+function getSubjectName(str) {
+   return str.substring(0, str.lastIndexOf("-"))?.trim() || str;
+}
