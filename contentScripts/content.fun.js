@@ -1,18 +1,27 @@
-function itIsUploadPage() {
-   const l = window.location.href;
-   const isExistsAnyStudentInfo =
-      document.querySelectorAll("#sv-table tbody tr").length > 0;
-   return (
-      l.includes("upload") && l.includes("makaut1") && isExistsAnyStudentInfo
+function isCA3Page() {
+   return document.querySelector("#sv-table tbody tr");
+}
+
+function isCA1Page() {
+   return document.querySelector(
+      "#marksEntrySectionCA .well.with-header table"
    );
 }
 
-function itIsUploadPageForCA1And2() {
+function itIsUploadPageForCA3() {
    const l = window.location.href;
-   const isExistsAnyStudentInfo = document.querySelector(
-      "#marksEntrySectionCA .well.with-header table"
+   return (
+      l.includes("upload") && l.includes("answerscript-upload") && isCA3Page()
    );
-   return l.includes("ca-marks-entry") && isExistsAnyStudentInfo;
+}
+
+function itIsUploadPageForCA1() {
+   const l = window.location.href;
+   return l.includes("ca-marks-entry") && isCA1Page();
+}
+
+function extractRoll(text) {
+   return text.replace(/\D/g, "");
 }
 
 function itIsCA3EvaluationPage() {
@@ -35,9 +44,19 @@ function uploadPdfConfirmation(UPLOADED_PDF_KEYS) {
    });
 }
 
-function submitPdfsUsingInjectScript() {
+function submitCA1PDFsUsingInjectScript() {
    return new Promise(async (resolve) => {
-      runtimeSendMessage("c_b_inject_pdf_submission", (r) => {
+      runtimeSendMessage("C_B_INJECT_CA1_PDF_SUBMISSION", (r) => {
+         resolve(r);
+         // console.log("Post-upload script injection successful");
+      });
+   });
+}
+
+
+function submitCA3PDFsUsingInjectScript() {
+   return new Promise(async (resolve) => {
+      runtimeSendMessage("C_B_INJECT_CA3_PDF_SUBMISSION", (r) => {
          resolve(r);
          // console.log("Post-upload script injection successful");
       });

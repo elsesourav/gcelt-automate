@@ -216,8 +216,8 @@ function setInputLikeHuman(element) {
 
 function shuffleArray(array) {
    for (let i = array.length - 1; i > 0; i--) {
-       const j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-       [array[i], array[j]] = [array[j], array[i]];   // swap elements
+      const j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+      [array[i], array[j]] = [array[j], array[i]]; // swap elements
    }
    return array;
 }
@@ -259,7 +259,6 @@ function chromeStorageRemoveLocal(key) {
    });
 }
 
-
 function DATE() {
    const date = new Date();
    const yy = date.getFullYear();
@@ -270,8 +269,6 @@ function DATE() {
    const ms = date.getSeconds();
    return { yy, mm, dd, hh, ss, ms };
 }
-
-
 
 /* -------------- marks given function ------------------ */
 
@@ -477,3 +474,36 @@ function preprocessImage(sourceCanvas) {
 
    return canvas;
 }
+
+// Alternative Method 1: Using atob() for base64 decoding
+const dataURLToPDFBlobAtob = (dataURL) => {
+   const base64Data = dataURL.split(",")[1]; // Remove "data:application/pdf;base64," prefix
+   const binaryData = atob(base64Data); // Decode base64
+   const bytes = new Uint8Array(binaryData.length);
+
+   for (let i = 0; i < binaryData.length; i++) {
+      bytes[i] = binaryData.charCodeAt(i);
+   }
+
+   return new Blob([bytes], { type: "application/pdf" });
+};
+// const pdfBlob2 = dataURLToPDFBlobAtob(pdfDataURL);
+
+// Convert Blob (e.g. PDF) to Base64 Data URL
+const blobToDataURL = async (blob) => {
+   return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => reject("Failed to read the blob as Data URL");
+      reader.readAsDataURL(blob);
+   });
+};
+
+const extractRollAndName = (string) => {
+   let match = string.match(/^\s*(\d+)\s*(?:-\s*)?(.*)$/);
+
+   if (match) {
+      return { roll: match[1], name: match[2] };
+   }
+   return null;
+};

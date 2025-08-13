@@ -16,7 +16,6 @@ onload = async () => {
    SAVED_PDF = pdf;
    createHtmlFileElement(SAVED_PDF, allFileElementList);
 
-
    chromeStorageGetLocal(KEYS.STORAGE_POPUP_SETTINGS, (val) => {
       if (!val) {
          saveSettingData();
@@ -32,7 +31,7 @@ onload = async () => {
             inp.getAttribute("inputmode") === "numeric" &&
             inp.type === "text"
          )
-         inp.value = val[inp.name]?.replace(/,/g, "") || 0;
+            inp.value = val[inp.name]?.replace(/,/g, "") || 0;
          else inp.value = val[inp.name] || "";
       });
    });
@@ -54,7 +53,7 @@ pdfInput.on("change", async (e) => {
 
                const bad = !match;
                const rollNumber = bad ? null : match[0];
-               
+
                return resolve({
                   bad,
                   rollNumber,
@@ -118,8 +117,6 @@ pdfDeleteButton.click(() => {
    });
 });
 
-
-
 // save setting data
 function saveSettingData() {
    chromeStorageGetLocal(KEYS.STORAGE_POPUP_SETTINGS, (val) => {
@@ -141,3 +138,4 @@ function saveSettingData() {
       chromeStorageSetLocal(KEYS.STORAGE_POPUP_SETTINGS, val);
    });
 }
+

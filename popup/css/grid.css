@@ -1,399 +1,1112 @@
+/* ======================================================================
+   BASIC GRID SYSTEM
+   
+   A flexible grid component with dynamic layouts and responsive behavior.
+   
+   Usage Examples:
+   <div class="basic-grid">                   <!-- Basic grid container -->
+   <div class="basic-grid flip">              <!-- Collapsible grid -->
+   <div class="basic-grid no-flip">           <!-- Non-collapsible grid -->
+   <div class="basic-grid fill">              <!-- Grid with background -->
+   
+   ====================================================================== */
+
 .basic-grid {
+   /* Base Layout */
    position: relative;
    width: 100%;
    height: auto;
    display: flex;
-   gap: calc(var(--s));
    justify-content: flex-start;
    align-items: center;
    flex-direction: column;
    gap: calc(var(--s));
+}
 
-   /* --------- center parent when 2 columns --------- */
-   /* @container (width >= 500px) {
-      .take-inp:has(.full-width:nth-child(even)):nth-child(odd):last-child,
-      .take-inp:has(.full-width:nth-child(odd)):nth-child(even):last-child {
-         grid-column: span 2;
-         width: calc(var(--ww) - var(--s) * 2);
-      }
-   } */
-
-   .take-inp.center,
-   .show-output,
-   .small-center,
-   .take-inp.images {
+/* Future Enhancement: Container Query Support */
+/* @container (width >= 500px) {
+   .take-inp:has(.full-width:nth-child(even)):nth-child(odd):last-child,
+   .take-inp:has(.full-width:nth-child(odd)):nth-child(even):last-child {
       grid-column: span 2;
       width: calc(var(--ww) - var(--s) * 2);
-
-      &.big {
-         width: calc(var(--ww) + var(--s) * 2);
-      }
-
-      &.single {
-         grid-template-columns: 1fr;
-         justify-items: center;
-
-         label {
-            position: absolute;
-            top: calc(var(--s) / 2 * -1);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: calc(var(--s) * 0.8);
-            background-color: light-dark(#000000aa, #ffffffaa);
-            color: light-dark(#fff, #000);
-            border-radius: calc(var(--s) * 0.5);
-            padding: 1px calc(var(--s) * 0.5);
-            pointer-events: none;
-            z-index: 1;
-         }
-      }
    }
+} */
 
-   &.no-flip {
-      height: auto;
-      overflow-y: auto;
+/* ======================================================================
+   CENTERED ELEMENTS LAYOUT
+   
+   Elements that span full width and are centered within the grid.
+   
+   Usage Examples:
+   <div class="take-inp center">          <!-- Centered input -->
+   <div class="take-inp center big">      <!-- Larger centered input -->
+   <div class="take-inp center single">   <!-- Single column with label -->
+   <div class="show-output">              <!-- Output display area -->
+   <div class="small-center">             <!-- Small centered element -->
+   <div class="take-inp images">          <!-- Image input area -->
+   
+   ====================================================================== */
+
+.basic-grid .take-inp.center,
+.basic-grid .show-output,
+.basic-grid .small-center,
+.basic-grid .take-inp.images {
+   grid-column: span 2;
+   width: calc(var(--ww) - var(--s) * 2);
+}
+
+/* Size Modifiers */
+.basic-grid .take-inp.center.big,
+.basic-grid .show-output.big,
+.basic-grid .small-center.big,
+.basic-grid .take-inp.images.big {
+   width: calc(var(--ww) + var(--s) * 2);
+}
+
+/* Single Column Layout with Floating Label */
+.basic-grid .take-inp.center.single,
+.basic-grid .show-output.single,
+.basic-grid .small-center.single,
+.basic-grid .take-inp.images.single {
+   grid-template-columns: 1fr;
+   justify-items: center;
+}
+
+.basic-grid .take-inp.center.single label,
+.basic-grid .show-output.single label,
+.basic-grid .small-center.single label,
+.basic-grid .take-inp.images.single label {
+   position: absolute;
+   top: calc(var(--s) / 2 * -1);
+   left: 50%;
+   transform: translateX(-50%);
+   font-size: calc(var(--s) * 0.8);
+   background-color: light-dark(#000000aa, #ffffffaa);
+   color: light-dark(#fff, #000);
+   border-radius: calc(var(--s) * 0.5);
+   padding: 1px calc(var(--s) * 0.5);
+   pointer-events: none;
+   z-index: 1;
+}
+
+/* ======================================================================
+   GRID STATE MODIFIERS
+   
+   Different behaviors for grid content display and interaction.
+   
+   Usage Examples:
+   <div class="basic-grid no-flip">       <!-- Always visible content -->
+   <div class="basic-grid active">        <!-- Active state -->
+   
+   ====================================================================== */
+
+/* Non-Collapsible Grid */
+.basic-grid.no-flip {
+   height: auto;
+   overflow-y: auto;
+}
+
+/* Active State - Show Only Second Paragraph */
+.basic-grid:not(.no-flip).active {
+   height: fit-content;
+   padding-bottom: calc(var(--s));
+}
+
+.basic-grid:not(.no-flip).active p:not(:nth-child(2)) {
+   opacity: 0;
+}
+
+/* Inactive State - Hide All Except First Paragraph */
+.basic-grid:not(.active) p:not(:first-child) {
+   opacity: 0;
+}
+
+/* ======================================================================
+   FULL-WIDTH ELEMENTS
+   
+   Elements that span the entire grid width with various layout options.
+   
+   Usage Examples:
+   <div class="imp-exp full-width">                    <!-- Import/Export -->
+   <div class="take-inp full-width">                   <!-- Full width input -->
+   <div class="take-inp full-width one-label-three-input">  <!-- 1 label + 3 inputs -->
+   <div class="take-inp full-width two-label-two-input">    <!-- 2 labels + 2 inputs -->
+   <div class="take-inp full-width three-button">          <!-- 3 buttons layout -->
+   <div class="take-inp full-width three-input">           <!-- 3 inputs layout -->
+   <div class="take-inp full-width four-input">            <!-- 4 inputs layout -->
+   <div class="take-inp full-width three-label-three-input"> <!-- 3 labels + 3 inputs -->
+   <div class="take-inp full-width big-textarea">          <!-- Large text editor -->
+   
+   ====================================================================== */
+
+/* Import/Export Full Width */
+.basic-grid .imp-exp.full-width {
+   grid-column: span 2;
+   width: 2fr;
+}
+
+/* Main Full-Width Container */
+.basic-grid .take-inp.full-width {
+   grid-column: span 2;
+   width: 2fr;
+   background-color: light-dark(#0000000d, #ffffff0d);
+}
+
+/* Layout Variants */
+.basic-grid .take-inp.full-width.one-label-three-input {
+   grid-template-columns: 2fr 3fr 3fr 3fr;
+}
+
+.basic-grid .take-inp.full-width.two-label-two-input {
+   grid-template-columns: 2fr 3fr 2fr 3fr;
+}
+
+.basic-grid .take-inp.full-width.three-button {
+   grid-template-columns: repeat(3, 1fr);
+}
+
+.basic-grid .take-inp.full-width.three-input {
+   grid-template-columns: repeat(3, 1fr);
+   gap: calc(var(--s) / 1.5);
+}
+
+.basic-grid .take-inp.full-width.three-input section {
+   width: 100%;
+   height: 100%;
+}
+
+.basic-grid .take-inp.full-width.three-input section .inp.num {
+   grid-template-columns: 2fr 5fr 2fr;
+}
+
+.basic-grid .take-inp.full-width.four-input {
+   grid-template-columns: 2fr 9fr 6fr 6fr;
+}
+
+.basic-grid .take-inp.full-width.three-label-three-input {
+   grid-template-columns: 3fr 7fr 3fr 7fr 3fr 7fr;
+}
+
+.basic-grid .take-inp.full-width.three-label-three-input.small-label {
+   grid-template-columns: 2fr 5fr 2fr 5fr 2fr 5fr;
+}
+
+.basic-grid .take-inp.full-width.three-label-three-input.small-label span {
+   font-size: calc(var(--s) * 0.8);
+}
+
+/* ======================================================================
+   BIG TEXTAREA LAYOUT
+   
+   Large text editor with header controls and export/import functionality.
+   
+   Usage Example:
+   <div class="take-inp full-width big-textarea">
+      <div class="editor-header">
+         <span id="languageEditorTitle">Editor Title</span>
+         <div class="ext-inp-content">
+            <div class="exp-imp">Export</div>
+            <div class="exp-imp">Import</div>
+         </div>
+      </div>
+      <textarea>Content here...</textarea>
+   </div>
+   
+   ====================================================================== */
+
+.basic-grid .take-inp.full-width.big-textarea {
+   grid-template-columns: 1fr;
+   height: calc(var(--s) * 40);
+   grid-template-rows: calc(var(--s) * 3.5) 1fr;
+}
+
+.basic-grid .take-inp.full-width.big-textarea .editor-header {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: grid;
+   place-items: center;
+   grid-template-columns: 3fr 1fr;
+   gap: calc(var(--s) * 1);
+}
+
+.basic-grid
+   .take-inp.full-width.big-textarea
+   .editor-header
+   #languageEditorTitle {
+   color: light-dark(#555, #aaa);
+   width: 100%;
+   padding: 0 calc(var(--s) * 1);
+   transition: color 200ms linear;
+}
+
+.basic-grid
+   .take-inp.full-width.big-textarea
+   .editor-header
+   #languageEditorTitle.error {
+   color: #ff0000;
+}
+
+.basic-grid .take-inp.full-width.big-textarea .editor-header .ext-inp-content {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   gap: calc(var(--s) * 1);
+}
+
+.basic-grid
+   .take-inp.full-width.big-textarea
+   .editor-header
+   .ext-inp-content
+   .exp-imp {
+   --m: 2px;
+   position: relative;
+   width: 100%;
+   height: calc(100% - var(--m) * 2);
+   margin: 2px;
+   padding: 0 calc(var(--s) * 1.4);
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   cursor: pointer;
+   font-size: calc(var(--s) * 1.2);
+   border-radius: calc(var(--s) * 0.5);
+   gap: calc(var(--s) * 1);
+   background: light-dark(#fff2, #0002);
+   transition: all linear 200ms;
+}
+
+.basic-grid
+   .take-inp.full-width.big-textarea
+   .editor-header
+   .ext-inp-content
+   .exp-imp:hover,
+.basic-grid
+   .take-inp.full-width.big-textarea
+   .editor-header
+   .ext-inp-content
+   .exp-imp:focus {
+   background: light-dark(#fff6, #0006);
+}
+
+/* ======================================================================
+   FLOATING LABELS
+   
+   Default label styling for grid elements.
+   These labels float above their containers with a translucent background.
+   
+   ====================================================================== */
+
+.basic-grid label {
+   position: absolute;
+   top: calc(var(--s) / 2 * -1);
+   left: 50%;
+   transform: translateX(-50%);
+   font-size: calc(var(--s) * 0.8);
+   background-color: light-dark(#000000aa, #ffffffaa);
+   color: light-dark(#fff, #000);
+   border-radius: calc(var(--s) * 0.5);
+   padding: 1px calc(var(--s) * 0.5);
+   pointer-events: none;
+   z-index: 1;
+}
+
+/* ======================================================================
+   COLLAPSIBLE GRID SECTIONS
+   
+   Interactive grid sections that can be collapsed/expanded with toggle controls.
+   
+   Usage Examples:
+   <div class="basic-grid flip">          <!-- Collapsible grid -->
+   <div class="basic-grid no-flip">       <!-- Always expanded -->
+   
+   ====================================================================== */
+
+.basic-grid.flip,
+.basic-grid.no-flip {
+   position: relative;
+}
+
+/* ======================================================================
+   TOGGLE CONTROLS
+   
+   Open/close toggle button with checkbox input and animated icon.
+   
+   ====================================================================== */
+
+.basic-grid.flip .open-close,
+.basic-grid.no-flip .open-close {
+   position: relative;
+   width: 100%;
+   grid-column: span 2;
+   height: var(--grid-min);
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   cursor: pointer;
+   gap: calc(var(--s));
+   z-index: 2;
+   font-size: calc(var(--s) * 1.5);
+   text-shadow: 2px 2px var(--bg), -2px -2px var(--bg), -2px 2px var(--bg),
+      2px -2px var(--bg);
+}
+
+/* Hidden Checkbox Control */
+.basic-grid.flip .open-close input[type="checkbox"].open-close,
+.basic-grid.no-flip .open-close input[type="checkbox"].open-close {
+   position: absolute;
+   width: 100%;
+   height: 100%;
+   opacity: 0;
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   appearance: none;
+}
+
+/* Animated Toggle Icon */
+.basic-grid.flip .open-close i,
+.basic-grid.no-flip .open-close i {
+   font-size: calc(var(--s) * 1.8);
+   transition: transform 200ms ease-in-out;
+}
+
+/* Flip Icon When Checked */
+.basic-grid.flip .open-close:has(input[type="checkbox"].open-close:checked) i,
+.basic-grid.no-flip
+   .open-close:has(input[type="checkbox"].open-close:checked)
+   i {
+   transform: scaleY(-1);
+}
+
+/* Grid Height Control Based on Toggle State */
+.basic-grid.flip:has(.open-close input[type="checkbox"].open-close:checked),
+.basic-grid.no-flip:has(.open-close input[type="checkbox"].open-close:checked) {
+   height: auto;
+}
+
+.basic-grid.flip:has(
+      .open-close input[type="checkbox"].open-close:not(:checked)
+   ),
+.basic-grid.no-flip:has(
+      .open-close input[type="checkbox"].open-close:not(:checked)
+   ) {
+   height: var(--grid-min);
+}
+
+/* ======================================================================
+         FILE MANAGEMENT SECTION
+         
+         File upload, display, and management interface with scrollable list
+         and action buttons.
+/* ======================================================================
+   FILE MANAGEMENT SECTION
+   
+   File upload, display, and management interface with scrollable list
+   and action buttons.
+   
+   Usage Example:
+   <div class="take-inp files">
+      <section class="all-files">
+         <div class="file">
+            <div class="file-no">1</div>
+            <div class="file-name">document.pdf</div>
+            <div class="file-status active">✓</div>
+         </div>
+      </section>
+      <div class="buttons">
+         <button>Upload</button>
+         <button>Clear</button>
+      </div>
+   </div>
+   
+   ====================================================================== */
+
+.basic-grid.flip .take-inp.files,
+.basic-grid.no-flip .take-inp.files {
+   position: relative;
+   --m: calc(var(--s) * 2);
+   width: calc(100% - var(--m) * 2);
+   margin: 0 var(--m);
+   height: auto;
+   display: grid;
+   place-items: center;
+   grid-template-columns: 1fr;
+}
+
+/* File List Container */
+.basic-grid.flip .take-inp.files section.all-files,
+.basic-grid.no-flip .take-inp.files section.all-files {
+   position: relative;
+   width: 100%;
+   max-height: 200px;
+   display: grid;
+   justify-content: start;
+   align-items: center;
+   padding: calc(var(--s) * 0.5);
+   gap: calc(var(--s) * 0.5);
+   background-color: transparent;
+   outline: none;
+   place-items: center;
+   overflow-x: hidden;
+   overflow-y: scroll;
+}
+
+/* Individual File Item */
+.basic-grid.flip .take-inp.files section.all-files .file,
+.basic-grid.no-flip .take-inp.files section.all-files .file {
+   position: relative;
+   width: 100%;
+   height: calc(var(--s) * 3);
+   border-radius: calc(var(--s) * 0.7);
+   overflow: hidden;
+   display: grid;
+   grid-template-columns: calc(var(--s) * 4) 1fr calc(var(--s) * 4);
+   background: light-dark(#ffffff0d, #0000000d);
+   place-items: center;
+   cursor: pointer;
+}
+
+/* Alternating Row Colors */
+.basic-grid.flip .take-inp.files section.all-files .file:nth-child(even),
+.basic-grid.no-flip .take-inp.files section.all-files .file:nth-child(even) {
+   background-color: light-dark(#0000000d, #ffffff0d);
+}
+
+/* File Number Display */
+.basic-grid.flip .take-inp.files section.all-files .file .file-no,
+.basic-grid.no-flip .take-inp.files section.all-files .file .file-no {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: grid;
+   padding-left: calc(var(--s) * 1);
+   justify-items: start;
+   align-items: center;
+   font-family: f9b;
+   font-size: calc(var(--s) * 1.4);
+   border-radius: inherit;
+   background: linear-gradient(to right, #0014a844, transparent);
+}
+
+/* File Name Display */
+.basic-grid.flip .take-inp.files section.all-files .file .file-name,
+.basic-grid.no-flip .take-inp.files section.all-files .file .file-name {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: grid;
+   padding-left: calc(var(--s) * 1);
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   justify-items: start;
+   align-items: center;
+   font-size: calc(var(--s) * 1.4);
+   font-family: f3;
+   font-weight: 400;
+}
+
+/* Error State */
+.basic-grid.flip .take-inp.files section.all-files .file .file-name.bad,
+.basic-grid.no-flip .take-inp.files section.all-files .file .file-name.bad {
+   color: #f00;
+}
+
+/* File Status Indicator */
+.basic-grid.flip .take-inp.files section.all-files .file .file-status,
+.basic-grid.no-flip .take-inp.files section.all-files .file .file-status {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: grid;
+   overflow: hidden;
+   place-items: center;
+   color: #00c900;
+   opacity: 0;
+   font-size: calc(var(--s) * 1.2);
+}
+
+.basic-grid.flip .take-inp.files section.all-files .file .file-status.active,
+.basic-grid.no-flip
+   .take-inp.files
+   section.all-files
+   .file
+   .file-status.active {
+   opacity: 1;
+}
+
+/* Action Buttons Container */
+.basic-grid.flip .take-inp.files .buttons,
+.basic-grid.no-flip .take-inp.files .buttons {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: calc(var(--s) * 2);
+   place-items: center;
+}
+
+/* Hidden File Input */
+.basic-grid.flip .take-inp.files .buttons input,
+.basic-grid.no-flip .take-inp.files .buttons input {
+   display: none;
+}
+
+/* Action Buttons */
+.basic-grid.flip .take-inp.files .buttons button,
+.basic-grid.no-flip .take-inp.files .buttons button {
+   --m: calc(var(--s) * 1);
+   position: relative;
+   width: calc(100% - var(--m) * 2);
+   margin: calc(var(--m));
+   height: 70%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   gap: calc(var(--s) * 1);
+   font-size: calc(var(--s) * 1.4);
+   font-family: f7b;
+   border-radius: calc(var(--s) * 0.5);
+   border: none;
+   outline: solid 1px light-dark(#000, #fff);
+   text-decoration: none;
+   color: light-dark(var(--black), var(--white));
+   background-color: light-dark(#fffd, #000d);
+   transition: 200ms color, 200ms scale, 200ms background-color;
+   scale: 1;
+   cursor: pointer;
+}
+
+.basic-grid.flip .take-inp.files .buttons button span,
+.basic-grid.no-flip .take-inp.files .buttons button span {
+   word-spacing: 4px;
+}
+
+.basic-grid.flip .take-inp.files .buttons button:hover,
+.basic-grid.no-flip .take-inp.files .buttons button:hover {
+   background-color: light-dark(#000, #fff);
+   color: light-dark(var(--white), var(--black));
+   scale: 1.02;
+}
+
+/* ======================================================================
+   FILLED GRID VARIANT
+   
+   Grid with background styling and borders for emphasized sections.
+   
+   Usage Example:
+   <div class="basic-grid fill">
+      <!-- Grid content with background styling -->
+   </div>
+   
+   ====================================================================== */
+
+.basic-grid.fill {
+   padding: calc(var(--s) * 0.8) calc(var(--s) * 0.5);
+   background-color: light-dark(#00000033, #ffffff33);
+   outline: solid 2px light-dark(#ffffff, #000000);
+   border-radius: calc(var(--s) * 0.4);
+   border-top-left-radius: 0;
+}
+
+/* ======================================================================
+   USAGE EXAMPLES AND DOCUMENTATION
+   
+   Complete HTML Examples:
+   
+   1. Basic Grid:
+   <div class="basic-grid">
+      <div class="take-inp center">Centered Content</div>
+      <div class="show-output">Output Area</div>
+   </div>
+   
+   2. Collapsible Grid:
+   <div class="basic-grid flip">
+      <div class="open-close">
+         <input type="checkbox" class="open-close">
+         <i>▼</i>
+         <span>Toggle Section</span>
+      </div>
+      <div class="take-inp full-width">Content</div>
+   </div>
+   
+   3. File Management Grid:
+   <div class="basic-grid">
+      <div class="take-inp files">
+         <section class="all-files">
+            <div class="file">
+               <div class="file-no">1</div>
+               <div class="file-name">document.pdf</div>
+               <div class="file-status active">✓</div>
+            </div>
+         </section>
+         <div class="buttons">
+            <button>Upload Files</button>
+            <button>Clear All</button>
+         </div>
+      </div>
+   </div>
+   
+   4. Multi-Input Layout:
+   <div class="basic-grid">
+      <div class="take-inp full-width three-label-three-input">
+         <span>Label 1</span><input type="text">
+         <span>Label 2</span><input type="text">
+         <span>Label 3</span><input type="text">
+      </div>
+   </div>
+   
+   5. Text Editor Layout:
+   <div class="basic-grid">
+      <div class="take-inp full-width big-textarea">
+         <div class="editor-header">
+            <span id="languageEditorTitle">Code Editor</span>
+            <div class="ext-inp-content">
+               <div class="exp-imp">Export</div>
+               <div class="exp-imp">Import</div>
+            </div>
+         </div>
+         <textarea>Code content here...</textarea>
+      </div>
+   </div>
+   
+   6. Custom Range Slider:
+   <div class="basic-grid">
+      <div class="take-inp full-width range-slider-container">
+         <label>Page Range</label>
+         <div class="dual-range-slider">
+            <input type="range" id="minRange" min="1" max="100" value="1">
+            <input type="range" id="maxRange" min="1" max="100" value="50">
+            <div class="slider-track"></div>
+            <div class="slider-progress"></div>
+         </div>
+         <div class="range-values">
+            <span id="rangeDisplay">1 - 50</span>
+         </div>
+      </div>
+   </div>
+   
+   ====================================================================== */
+
+/* ======================================================================
+   CUSTOM DUAL RANGE SLIDER
+   
+   A beautiful dual range slider component matching the grid design theme.
+   
+   Usage Example:
+   <div class="take-inp full-width range-slider-container">
+      <label>Select Range</label>
+      <div class="dual-range-slider">
+         <input type="range" id="minRange" min="1" max="100" value="1">
+         <input type="range" id="maxRange" min="1" max="100" value="50">
+         <div class="slider-track"></div>
+         <div class="slider-progress"></div>
+      </div>
+      <div class="range-values">
+         <span id="rangeDisplay">1 - 50</span>
+      </div>
+   </div>
+   
+   ====================================================================== */
+
+.basic-grid .take-inp.range-slider-container {
+   position: relative;
+   background-color: light-dark(#ffffff08, #00000008);
+   border-radius: calc(var(--s) * 0.8);
+   border: 1px solid light-dark(#00000020, #ffffff20);
+   grid-template-columns: 5fr 10fr 4fr;
+   justify-items: center;
+}
+
+.basic-grid .take-inp.range-slider-container label {
+   position: relative;
+   top: auto;
+   left: auto;
+   transform: none;
+   font-size: calc(var(--s) * 1.2);
+   background: none;
+   color: light-dark(#333, #ccc);
+   border-radius: 0;
+   padding: 0;
+   display: block;
+   font-weight: 600;
+   pointer-events: auto;
+   z-index: auto;
+}
+
+.dual-range-slider,
+.single-range-slider {
+   position: relative;
+   width: 100%;
+   height: calc(var(--s) * 4);
+}
+
+.dual-range-slider input[type="range"],
+.single-range-slider input[type="range"] {
+   position: absolute;
+   width: 100%;
+   height: calc(var(--s) * 4);
+   background: transparent;
+   pointer-events: none;
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   appearance: none;
+   outline: none;
+   z-index: 3;
+}
+
+.dual-range-slider input[type="range"]::-webkit-slider-thumb,
+.single-range-slider input[type="range"]::-webkit-slider-thumb {
+   pointer-events: all;
+   width: calc(var(--s) * 2.2);
+   height: calc(var(--s) * 2.2);
+   background: light-dark(#4caf50, #66bb6a);
+   border: 3px solid light-dark(#ffffff, #1a1a1a);
+   border-radius: 50%;
+   cursor: pointer;
+   -webkit-appearance: none;
+   box-shadow: 0 2px 8px light-dark(#00000030, #00000060);
+   transition: all 200ms ease;
+   position: relative;
+}
+
+.dual-range-slider input[type="range"]::-moz-range-thumb {
+   pointer-events: all;
+   width: calc(var(--s) * 2.2);
+   height: calc(var(--s) * 2.2);
+   background: light-dark(#4caf50, #66bb6a);
+   border: 3px solid light-dark(#ffffff, #1a1a1a);
+   border-radius: 50%;
+   cursor: pointer;
+   box-shadow: 0 2px 8px light-dark(#00000030, #00000060);
+   transition: all 200ms ease;
+   -moz-appearance: none;
+}
+
+.dual-range-slider input[type="range"]:hover::-webkit-slider-thumb {
+   background: light-dark(#45a049, #7bc67e);
+   transform: scale(1.1);
+   box-shadow: 0 4px 12px light-dark(#00000040, #00000080);
+}
+
+.dual-range-slider input[type="range"]:hover::-moz-range-thumb {
+   background: light-dark(#45a049, #7bc67e);
+   transform: scale(1.1);
+   box-shadow: 0 4px 12px light-dark(#00000040, #00000080);
+}
+
+.dual-range-slider input[type="range"]:active::-webkit-slider-thumb {
+   background: light-dark(#3d8b40, #8bc78f);
+   transform: scale(1.2);
+}
+
+.dual-range-slider input[type="range"]:active::-moz-range-thumb {
+   background: light-dark(#3d8b40, #8bc78f);
+   transform: scale(1.2);
+}
+
+.slider-track {
+   position: absolute;
+   width: 100%;
+   height: calc(var(--s) * 0.6);
+   background: light-dark(#e0e0e0, #404040);
+   top: 50%;
+   transform: translateY(-50%);
+   border-radius: calc(var(--s) * 0.3);
+   z-index: 1;
+   box-shadow: inset 0 2px 4px light-dark(#00000020, #00000040);
+}
+
+.slider-progress {
+   position: absolute;
+   height: calc(var(--s) * 0.6);
+   background: linear-gradient(
+      90deg,
+      light-dark(#4caf50, #66bb6a),
+      light-dark(#45a049, #7bc67e)
+   );
+   top: 50%;
+   transform: translateY(-50%);
+   border-radius: calc(var(--s) * 0.3);
+   z-index: 2;
+   transition: all 200ms ease;
+   box-shadow: 0 2px 6px light-dark(#4caf5030, #66bb6a30);
+}
+
+.range-values {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.range-values span {
+   font-size: calc(var(--s) * 1.3);
+   font-weight: 600;
+   color: light-dark(#4caf50, #66bb6a);
+   background: light-dark(#f0f8f0, #1a2e1a);
+   padding: calc(var(--s) * 0.5) calc(var(--s) * 1);
+   border-radius: calc(var(--s) * 0.5);
+   border: 1px solid light-dark(#4caf5030, #66bb6a30);
+   min-width: calc(var(--s) * 8);
+   text-align: center;
+   font-family: monospace;
+}
+
+/* ======================================================================
+   TAB NAVIGATION SYSTEM
+   
+   Navigation tabs for switching between different content sections.
+   Features smooth transitions and active state indicators.
+   
+   Usage Examples:
+   <nav class="tab-navigation">
+      <div class="nav-container">
+         <button class="nav-tab active" data-tab="section1">Tab 1</button>
+         <button class="nav-tab" data-tab="section2">Tab 2</button>
+      </div>
+   </nav>
+   
+   ====================================================================== */
+
+.tab-navigation {
+   position: relative;
+   width: calc(100% - 4px);
+   margin: 2px;
+   padding: calc(var(--s) * 1);
+   background-color: light-dark(#8383d7, #1b1b2d);
+   outline: solid 2px light-dark(#fff, #000);
+   border-radius: calc(var(--s) / 2);
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.nav-container {
+   display: flex;
+   gap: calc(var(--s) * 0.5);
+   background: light-dark(#ffffff20, #00000020);
+   padding: calc(var(--s) * 0.3);
+   border-radius: calc(var(--s) * 0.8);
+   backdrop-filter: blur(5px);
+   border: 1px solid light-dark(#ffffff30, #ffffff10);
+}
+
+.nav-tab {
+   position: relative;
+   display: flex;
+   align-items: center;
+   gap: calc(var(--s) * 0.8);
+   padding: calc(var(--s) * 1) calc(var(--s) * 1.8);
+   background: transparent;
+   border: none;
+   border-radius: calc(var(--s) * 0.6);
+   color: light-dark(#ffffff90, #ffffff90);
+   font-family: f5b;
+   font-size: calc(var(--s) * 1.2);
+   cursor: pointer;
+   transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
+   overflow: hidden;
+}
+
+.nav-tab::before {
+   content: "";
+   position: absolute;
+   top: 0;
+   left: -100%;
+   width: 100%;
+   height: 100%;
+   background: linear-gradient(
+      90deg,
+      transparent,
+      light-dark(#ffffff20, #ffffff10),
+      transparent
+   );
+   transition: left 500ms ease;
+}
+
+.nav-tab:hover::before {
+   left: 100%;
+}
+
+.nav-tab i {
+   font-size: calc(var(--s) * 1.4);
+   transition: transform 300ms ease;
+}
+
+.nav-tab span {
+   font-weight: 600;
+   letter-spacing: 0.3px;
+   transition: transform 300ms ease;
+}
+
+.nav-tab:hover {
+   background: light-dark(#ffffff15, #ffffff08);
+   color: light-dark(#ffffff, #ffffff);
+   transform: translateY(-1px);
+   box-shadow: 0 4px 12px light-dark(#00000015, #00000030);
+}
+
+.nav-tab:hover i,
+.nav-tab:hover span {
+   transform: scale(1.05);
+}
+
+.nav-tab.active {
+   background: linear-gradient(
+      135deg,
+      light-dark(#7c4dff, #7c4dff),
+      light-dark(#448aff, #448aff)
+   );
+   color: #ffffff;
+   box-shadow: 0 4px 15px light-dark(#7c4dff40, #7c4dff30),
+      inset 0 1px 0 light-dark(#ffffff20, #ffffff10);
+   transform: translateY(-2px);
+}
+
+.nav-tab.active::before {
+   display: none;
+}
+
+.nav-tab.active i,
+.nav-tab.active span {
+   transform: scale(1.1);
+   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.nav-tab:active {
+   transform: translateY(0);
+   transition: transform 100ms ease;
+}
+
+/* ======================================================================
+   TAB CONTENT SYSTEM
+   
+   Content sections that correspond to navigation tabs.
+   Features smooth fade transitions and proper content organization.
+   
+   Usage Examples:
+   <div class="tab-content active" id="content1">Content 1</div>
+   <div class="tab-content" id="content2">Content 2</div>
+   
+   ====================================================================== */
+
+.tab-content {
+   width: 100%;
+   opacity: 0;
+   visibility: hidden;
+   position: absolute;
+   top: 0;
+   left: 0;
+   transform: translateY(20px);
+   transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+   pointer-events: none;
+}
+
+.tab-content.active {
+   opacity: 1;
+   visibility: visible;
+   position: relative;
+   transform: translateY(0);
+   pointer-events: all;
+}
+
+main {
+   position: relative;
+   min-height: calc(var(--s) * 20);
+}
+
+/* ======================================================================
+   COMING SOON SECTION
+   
+   Special styling for the CA3 coming soon content with preview features.
+   
+   ====================================================================== */
+
+.coming-soon-container {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   width: 100%;
+   min-height: calc(var(--s) * 20);
+   padding: calc(var(--s) * 2);
+}
+
+.coming-soon-content {
+   text-align: center;
+   background: light-dark(#ffffff10, #ffffff05);
+   padding: calc(var(--s) * 3);
+   border-radius: calc(var(--s) * 1.5);
+   border: 2px dashed light-dark(#7c4dff60, #7c4dff40);
+   backdrop-filter: blur(10px);
+   max-width: calc(var(--s) * 35);
+}
+
+.coming-soon-content > i {
+   font-size: calc(var(--s) * 4);
+   color: light-dark(#7c4dff, #7c4dff);
+   margin-bottom: calc(var(--s) * 1.5);
+   display: block;
+   animation: pulse 2s infinite;
+}
+
+.coming-soon-content h2 {
+   font-size: calc(var(--s) * 2.2);
+   font-family: f5b;
+   color: light-dark(#333, #fff);
+   margin-bottom: calc(var(--s) * 1);
+   background: linear-gradient(120deg, #7c4dff, #448aff);
+   background-clip: text;
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+}
+
+.coming-soon-content p {
+   font-size: calc(var(--s) * 1.3);
+   color: light-dark(#666, #ccc);
+   margin-bottom: calc(var(--s) * 2);
+   line-height: 1.5;
+}
+
+.feature-preview {
+   display: flex;
+   flex-direction: column;
+   gap: calc(var(--s) * 1);
+   margin-top: calc(var(--s) * 2);
+}
+
+.feature-item {
+   display: flex;
+   align-items: center;
+   gap: calc(var(--s) * 1);
+   padding: calc(var(--s) * 0.8) calc(var(--s) * 1.2);
+   background: light-dark(#ffffff15, #ffffff08);
+   border-radius: calc(var(--s) * 0.8);
+   border: 1px solid light-dark(#7c4dff20, #7c4dff15);
+}
+
+.feature-item i {
+   color: light-dark(#4caf50, #66bb6a);
+   font-size: calc(var(--s) * 1.4);
+}
+
+.feature-item span {
+   font-size: calc(var(--s) * 1.2);
+   color: light-dark(#333, #fff);
+   font-weight: 500;
+}
+
+@keyframes pulse {
+   0%,
+   100% {
+      transform: scale(1);
+      opacity: 1;
    }
-
-   &:not(.no-flip).active {
-      height: fit-content;
-      padding-bottom: calc(var(--s));
-
-      p:not(:nth-child(2)) {
-         opacity: 0;
-      }
-   }
-
-   &:not(.active) {
-      p:not(:first-child) {
-         opacity: 0;
-      }
-   }
-
-   .imp-exp.full-width {
-      grid-column: span 2;
-      width: 2fr;
-   }
-
-   .take-inp.full-width {
-      grid-column: span 2;
-      width: 2fr;
-      background-color: light-dark(#0000000d, #ffffff0d);
-
-      &.one-label-three-input {
-         grid-template-columns: 2fr 3fr 3fr 3fr;
-      }
-
-      &.tow-label-tow-input {
-         grid-template-columns: 2fr 3fr 2fr 3fr;
-      }
-
-      &.three-button {
-         grid-template-columns: repeat(3, 1fr);
-      }
-
-      &.three-input {
-         grid-template-columns: repeat(3, 1fr);
-         gap: calc(var(--s) / 1.5);
-
-         section {
-            width: 100%;
-            height: 100%;
-
-            .inp.num {
-               grid-template-columns: 2fr 5fr 2fr;
-            }
-         }
-      }
-
-      &.four-input {
-         grid-template-columns: 2fr 9fr 6fr 6fr;
-      }
-
-      &.three-label-three-input {
-         grid-template-columns: 3fr 7fr 3fr 7fr 3fr 7fr;
-
-         &.small-label {
-            grid-template-columns: 2fr 5fr 2fr 5fr 2fr 5fr;
-
-            span {
-               font-size: calc(var(--s) * 0.8);
-            }
-         }
-      }
-
-      &.big-textarea {
-         grid-template-columns: 1fr;
-         height: calc(var(--s) * 40);
-         grid-template-rows: calc(var(--s) * 3.5) 1fr;
-
-         .editor-header {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: grid;
-            place-items: center;
-            grid-template-columns: 3fr 1fr;
-            gap: calc(var(--s) * 1);
-
-            #languageEditorTitle {
-               color: light-dark(#555, #aaa);
-               width: 100%;
-               padding: 0 calc(var(--s) * 1);
-               transition: color 200ms linear;
-
-               &.error {
-                  color: #ff0000;
-               }
-            }
-
-            .ext-inp-content {
-               position: relative;
-               width: 100%;
-               height: 100%;
-               display: flex;
-               justify-content: center;
-               align-items: center;
-               gap: calc(var(--s) * 1);
-
-               .exp-imp {
-                  --m: 2px;
-                  position: relative;
-                  width: 100%;
-                  height: calc(100% - var(--m) * 2);
-                  margin: 2px;
-                  padding: 0 calc(var(--s) * 1.4);
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  cursor: pointer;
-                  font-size: calc(var(--s) * 1.2);
-                  border-radius: calc(var(--s) * 0.5);
-                  gap: calc(var(--s) * 1);
-                  background: light-dark(#fff2, #0002);
-                  transition: all linear 200ms;
-
-                  &:hover,
-                  &:focus {
-                     background: light-dark(#fff6, #0006);
-                  }
-               }
-            }
-         }
-
-      }
-   }
-
-   label {
-      position: absolute;
-      top: calc(var(--s) / 2 * -1);
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: calc(var(--s) * 0.8);
-      background-color: light-dark(#000000aa, #ffffffaa);
-      color: light-dark(#fff, #000);
-      border-radius: calc(var(--s) * 0.5);
-      padding: 1px calc(var(--s) * 0.5);
-      pointer-events: none;
-      z-index: 1;
-   }
-
-   &.flip,
-   &.no-flip {
-      position: relative;
-
-      .open-close {
-         position: relative;
-         width: 100%;
-         grid-column: span 2;
-         height: var(--grid-min);
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         cursor: pointer;
-         gap: calc(var(--s));
-         z-index: 2;
-         font-size: calc(var(--s) * 1.5);
-         text-shadow: 2px 2px var(--bg), -2px -2px var(--bg), -2px 2px var(--bg),
-            2px -2px var(--bg);
-
-         input[type="checkbox"].open-close {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-         }
-
-         i {
-            font-size: calc(var(--s) * 1.8);
-            transition: transform 200ms ease-in-out;
-         }
-
-         &:has(input[type="checkbox"].open-close:checked) i {
-            transform: scaleY(-1);
-         }
-      }
-
-      &:has(.open-close input[type="checkbox"].open-close:checked) {
-         height: auto;
-      }
-
-      &:has(.open-close input[type="checkbox"].open-close:not(:checked)) {
-         height: var(--grid-min);
-      }
-
-      .take-inp.files {
-         position: relative;
-         --m: calc(var(--s) * 2);
-         width: calc(100% - var(--m) * 2);
-         margin: 0 var(--m);
-         height: auto;
-         display: grid;
-         place-items: center;
-         grid-template-columns: 1fr;
-
-         section.all-files {
-            position: relative;
-            width: 100%;
-            max-height: 200px;
-            display: grid;
-            justify-content: start;
-            align-items: center;
-            padding: calc(var(--s) * 0.5);
-            gap: calc(var(--s) * 0.5);
-            background-color: transparent;
-            outline: none;
-            place-items: center;
-            overflow-x: hidden;
-            overflow-y: scroll;
-
-            .file {
-               position: relative;
-               width: 100%;
-               height: calc(var(--s) * 3);
-               border-radius: calc(var(--s) * 0.7);
-               overflow: hidden;
-               display: grid;
-               grid-template-columns: calc(var(--s) * 4) 1fr calc(var(--s) * 4);
-               background: light-dark(#ffffff0d, #0000000d);
-               place-items: center;
-               cursor: pointer;
-
-               &:nth-child(even) {
-                  background-color: light-dark(#0000000d, #ffffff0d);
-               }
-
-               .file-no {
-                  position: relative;
-                  width: 100%;
-                  height: 100%;
-                  display: grid;
-                  padding-left: calc(var(--s) * 1);
-                  justify-items: start;
-                  align-items: center;
-                  font-family: f9b;
-                  font-size: calc(var(--s) * 1.4);
-                  border-radius: inherit;
-                  background: linear-gradient(to right, #0014a844, transparent);
-               }
-
-               .file-name {
-                  position: relative;
-                  width: 100%;
-                  height: 100%;
-                  display: grid;
-                  padding-left: calc(var(--s) * 1);
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  justify-items: start;
-                  align-items: center;
-                  font-size: calc(var(--s) * 1.4);
-                  font-family: f3;
-                  font-weight: 400;
-
-                  &.bad {
-                     color: #f00;
-                  }
-               }
-               .file-status {
-                  position: relative;
-                  width: 100%;
-                  height: 100%;
-                  display: grid;
-                  overflow: hidden;
-                  place-items: center;
-                  color: #00c900;
-                  opacity: 0;
-                  font-size: calc(var(--s) * 1.2);
-
-                  &.active {
-                     opacity: 1;
-                  }
-               }
-            }
-         }
-
-
-         .buttons {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: calc(var(--s) * 2);
-            place-items: center;
-
-            input {
-               display: none;
-            }
-
-            button {
-               --m: calc(var(--s) * 1);
-               position: relative;
-               width: calc(100% - var(--m) * 2);
-               margin: calc(var(--m));
-               height: 70%;
-               display: flex;
-               justify-content: center;
-               align-items: center;
-               gap: calc(var(--s) * 1);
-               font-size: calc(var(--s) * 1.2);
-               font-family: f7b;
-               border-radius: calc(var(--s) * 0.5);
-               border: none;
-               outline: none;
-               text-decoration: none;
-               color: light-dark(var(--black), var(--white));
-               background-color: light-dark(#fffd, #000d);
-               outline: solid 1px light-dark(#000, #fff);
-               transition: 200ms color, 200ms scale, 200ms background-color;
-               scale: 1;
-               font-size: calc(var(--s) * 1.4);
-               cursor: pointer;
-
-               span {
-                  word-spacing: 4px;
-               }
-
-               &:hover {
-                  background-color: light-dark(#000, #fff);
-                  color: light-dark(var(--white), var(--black));
-                  scale: 1.02;
-               }
-            }
-         }
-      }
-   }
-
-   /* -- fill -- */
-   &.fill {
-      padding: calc(var(--s) * 0.8) calc(var(--s) * 0.5);
-      background-color: light-dark(#00000033, #ffffff33);
-      outline: solid 2px light-dark(#ffffff, #000000);
-      border-radius: calc(var(--s) * 0.4);
-      border-top-left-radius: 0;
+   50% {
+      transform: scale(1.05);
+      opacity: 0.8;
    }
 }

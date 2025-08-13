@@ -1,94 +1,128 @@
-async function putPdfFiles() {
-   try {
-      const PDF_FILE_DATA = await getPdfData();
-      if (!PDF_FILE_DATA) {
-         console.log("No PDF data available");
-         return;
+function showConfirm(title, message, onCancel, onConfirm) {
+   let confirmBtn, cancelBtn;
+
+   const confirmDialog = CE(
+      { class: "__confirm__" },
+      CE(
+         { class: "__dialog__" },
+         CE({ class: "__title__" }, title),
+         CE({ class: "__message__" }, message),
+         CE(
+            { class: "__actions__" },
+            (cancelBtn = CE({ class: "__btn__ red" }, "Cancel")),
+            (confirmBtn = CE({ class: "__btn__ blue" }, "Confirm"))
+         )
+      )
+   );
+
+   // Event handlers
+   confirmBtn.onclick = () => {
+      document.body.removeChild(confirmDialog);
+      if (onConfirm) onConfirm();
+   };
+
+   cancelBtn.onclick = () => {
+      document.body.removeChild(confirmDialog);
+      if (onCancel) onCancel();
+   };
+
+   // Close on backdrop click
+   confirmDialog.onclick = (e) => {
+      if (e.target === confirmDialog) {
+         document.body.removeChild(confirmDialog);
+         if (onCancel) onCancel();
       }
+   };
 
-      const { PDFS, SETTINGS } = PDF_FILE_DATA;
-      const OVERWRITE_PDF_FILES = SETTINGS?.OVERWRITE_PDF_FILES || false;
-      const SUBMIT_PDF_KEYS = [];
-
-      const trElements = document.querySelectorAll("#sv-table tbody tr");
-      for (let tr of trElements) {
-         const rollNo = tr.querySelectorAll("td")?.[1]?.innerText;
-
-         const studentPdfFile = PDFS?.[rollNo];
-         if (!studentPdfFile) continue;
-
-         SUBMIT_PDF_KEYS.push(rollNo);
-         const fileInput = tr.querySelector("input");
-         // const aTag = tr.querySelector("a");
-         const isAlreadyUploaded = tr.querySelector("td div a");
-
-         if (!isAlreadyUploaded || (isAlreadyUploaded && OVERWRITE_PDF_FILES)) {
-            await putPdfIntoInputFile(fileInput, studentPdfFile);
-            fileInput.style.border = "solid 2px #0f0";
-            fileInput.dataset.action = "submit";
-         } else {
-            fileInput.style.border = "";
-            fileInput.dataset.action = "";
-         }
-      }
-
-      uploadPdfConfirmation(SUBMIT_PDF_KEYS);
-   } catch (error) {
-      console.error("PDF upload process failed:", error);
-   }
+   document.body.appendChild(confirmDialog);
+   return confirmDialog;
 }
 
-function setup_put_pdf() {
-   let putPdf, submitPdf;
-   CE(
-      { id: "__fw_pdf__", class: "__fw__" },
-      (putPdf = CE(
-         {
-            class: "__btn__",
-            "data-text": "UPLOAD",
-            style: "--delay: 0ms",
-         },
-         "UPLOAD"
-      )),
-      (submitPdf = CE(
-         {
-            class: "__btn__",
-            "data-text": "SUBMIT",
-            style: "--delay: 400ms",
-         },
-         "SUBMIT"
-      ))
-   ).parent(document.body);
 
-   putPdf.addEventListener("click", putPdfFiles);
-   submitPdf.addEventListener("click", submitPdfsUsingInjectScript);
+// Alert Component
+function showAlert(options) {
+   const {
+      type = "info",
+      title = "Alert",
+      message = "",
+      buttonText = "OK",
+      onClose = () => {},
+   } = options;
 
-   window.addEventListener("popstate", () => {
-      putPdf.removeEventListener("click", putPdfFiles);
-      submitPdf.removeEventListener("click", submitPdfsUsingInjectScript);
-   });
+   const icons = {
+      success: "✓",
+      error: "✕",
+      warning: "⚠",
+      info: "ℹ",
+   };
+
+   let okBtn;
+
+   const alertDialog = CE(
+      { class: "__alert__" },
+      CE(
+         { class: "__dialog__" },
+         CE({ class: `__icon__ ${type}` }, icons[type]),
+         CE({ class: "__title__" }, title),
+         CE({ class: "__message__" }, message),
+         CE(
+            { class: "__actions__" },
+            (okBtn = CE({ class: "__btn__ blue" }, buttonText))
+         )
+      )
+   );
+
+   // Event handlers
+   okBtn.onclick = () => {
+      document.body.removeChild(alertDialog);
+      onClose();
+   };
+
+   // Close on backdrop click
+   alertDialog.onclick = (e) => {
+      if (e.target === alertDialog) {
+         document.body.removeChild(alertDialog);
+         onClose();
+      }
+   };
+
+   // Close on Escape key
+   const handleEscape = (e) => {
+      if (e.key === "Escape") {
+         document.body.removeChild(alertDialog);
+         document.removeEventListener("keydown", handleEscape);
+         onClose();
+      }
+   };
+   document.addEventListener("keydown", handleEscape);
+
+   document.body.appendChild(alertDialog);
+   return alertDialog;
 }
 
 function setupActionButtons() {
    const fwPdf = I("#__fw_pdf__")[0];
    const isFwPdf = fwPdf instanceof Node;
-   const isUploadPage = itIsUploadPage();
 
-   if (isUploadPage && !isFwPdf) {
-      setStyle();
-      setup_put_pdf();
-   } else if (isUploadPage && isFwPdf) {
+   if (!isFwPdf) {
+      if (itIsUploadPageForCA3()) {
+         setupUploadCA3();
+      } else if (itIsUploadPageForCA1()) {
+         setupUploadCA1();
+      }
+   } else if (isFwPdf && (itIsUploadPageForCA3() || itIsUploadPageForCA1())) {
       fwPdf.style.display = "flex";
-   } else if (!isUploadPage && isFwPdf) {
+   } else if (isFwPdf && !(itIsUploadPageForCA3() || itIsUploadPageForCA1())) {
       fwPdf.style.display = "none";
    }
 }
 
 // create action buttons
 onload = async () => {
-   if (itIsUploadPage()) {
-      setStyle();
-      setup_put_pdf();
+   if (itIsUploadPageForCA3()) {
+      setupUploadCA3();
+   } else if (itIsUploadPageForCA1()) {
+      setupUploadCA1();
    }
 
    if (itIsCA3EvaluationPage()) {
@@ -104,6 +138,8 @@ onload = async () => {
       pdfCanvasLoaded();
    }
 
+   // if ()
+
    addEventListener("mousedown", async (_) => {
       setupActionButtons();
       await wait(1000);
@@ -112,7 +148,6 @@ onload = async () => {
       setupActionButtons();
    });
 };
-
 
 /* 
 
@@ -163,6 +198,18 @@ simulateDraw(10, 10, 200, 200);
 
 
 
+
+
+
+*/
+
+/* 
+
+================  Upload Rubrics Button Location  ===================
+teacher_document.parentElement
+
+================  Upload and Submit Button Location  ===================
+document.querySelector("table").parentElement.parentElement.parentElement
 
 
 
