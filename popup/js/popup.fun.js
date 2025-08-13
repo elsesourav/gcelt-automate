@@ -790,7 +790,7 @@ class PDFPreviewModal {
          .clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       // Set title
-      this.title.textContent = `Preview: ${fileName} (First Page)`;
+      this.title.textContent = `Preview: ${fileName}`;
 
       // Validate and fix PDF content format
       let validPdfContent = this.validatePdfContent(pdfContent);
@@ -808,11 +808,16 @@ class PDFPreviewModal {
          document.body.style.overflow = "hidden";
       }
 
-      // Render first page using PDF.js
-      this.renderFirstPage(validPdfContent);
+      // Reset scroll position to top
+      if (this.canvasContainer) {
+         this.canvasContainer.scrollTop = 0;
+      }
+
+      // Render all pages using PDF.js
+      this.renderAllPages(validPdfContent);
    }
 
-   async renderFirstPage(pdfDataUrl) {
+   async renderAllPages(pdfDataUrl) {
       try {
          // Convert data URL to Uint8Array
          const base64Data = pdfDataUrl.split(",")[1];
@@ -824,32 +829,84 @@ class PDFPreviewModal {
 
          // Load PDF document
          const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+         const numPages = pdf.numPages;
 
-         // Get first page
-         const page = await pdf.getPage(1);
+         // Calculate canvas width based on container (use full width minus 2px padding)
+         const containerWidth = this.canvasContainer.offsetWidth - 2; // 2px total padding
+         let maxPageWidth = containerWidth;
+         let totalHeight = 0;
+         let pageViewports = [];
 
-         // Calculate scale to fit canvas
-         const viewport = page.getViewport({ scale: 1 });
-         const containerWidth = this.canvasContainer.offsetWidth - 40; // padding
-         const containerHeight = this.canvasContainer.offsetHeight - 40; // padding
+         // First pass: calculate dimensions for all pages
+         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1 });
 
-         const scaleX = containerWidth / viewport.width;
-         const scaleY = containerHeight / viewport.height;
-         const scale = Math.min(scaleX, scaleY, 2); // max scale of 2 for quality
+            // Calculate scale to fit container width
+            const scale = Math.min(containerWidth / viewport.width, 2); // max scale of 2
+            const scaledViewport = page.getViewport({ scale });
 
-         const scaledViewport = page.getViewport({ scale });
+            pageViewports.push(scaledViewport);
+            totalHeight += scaledViewport.height + 20; // 20px spacing between pages
+         }
 
-         // Set canvas dimensions
-         this.canvas.width = scaledViewport.width;
-         this.canvas.height = scaledViewport.height;
+         // Set canvas dimensions to accommodate all pages
+         this.canvas.width = maxPageWidth;
+         this.canvas.height = totalHeight;
 
-         // Render page
-         const renderContext = {
-            canvasContext: this.canvas.getContext("2d"),
-            viewport: scaledViewport,
-         };
+         // Clear canvas
+         const ctx = this.canvas.getContext("2d");
+         ctx.fillStyle = "#ffffff";
+         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-         await page.render(renderContext).promise;
+         // Second pass: render all pages
+         let currentY = 0;
+         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = pageViewports[pageNum - 1];
+
+            // Center the page horizontally within the full canvas width
+            const offsetX = (maxPageWidth - viewport.width) / 2;
+
+            // Draw page border
+            ctx.strokeStyle = "#ddd";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(
+               offsetX - 1,
+               currentY - 1,
+               viewport.width + 2,
+               viewport.height + 2
+            );
+
+            // Create a temporary canvas for this page
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = viewport.width;
+            tempCanvas.height = viewport.height;
+            const tempCtx = tempCanvas.getContext("2d");
+
+            // Render page to temporary canvas
+            const renderContext = {
+               canvasContext: tempCtx,
+               viewport: viewport,
+            };
+
+            await page.render(renderContext).promise;
+
+            // Draw the page onto main canvas
+            ctx.drawImage(tempCanvas, offsetX, currentY);
+
+            // Add page number overlay
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.font = "12px Arial";
+            ctx.fillText(`Page ${pageNum}`, offsetX + 10, currentY + 20);
+
+            // Move to next page position
+            currentY += viewport.height + 20; // 20px spacing
+         }
+
+         // Ensure canvas container can scroll
+         this.canvasContainer.style.overflow = "auto";
+         this.canvasContainer.style.maxHeight = "80vh";
       } catch (error) {
          console.error("Error rendering PDF:", error);
          // Fallback to iframe if PDF.js fails
@@ -861,7 +918,7 @@ class PDFPreviewModal {
       // Hide canvas and show iframe
       this.canvasContainer.style.display = "none";
       this.iframe.style.display = "block";
-      this.iframe.src = pdfContent + "#page=1";
+      this.iframe.src = pdfContent; // Show all pages, not just first page
    }
 
    validatePdfContent(content) {
