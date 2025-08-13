@@ -441,7 +441,7 @@
 .basic-grid.no-flip .take-inp.files section.all-files {
    position: relative;
    width: 100%;
-   max-height: 240px;
+   max-height: 280px;
    display: grid;
    justify-content: start;
    align-items: center;

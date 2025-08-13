@@ -772,7 +772,7 @@
  if (task.terminated) {
  return;
  }
- sink.error(reason);
+ sink.log(reason);
  }
  );
  });
@@ -818,7 +818,7 @@
  if (task.terminated) {
  return;
  }
- sink.error(reason);
+ sink.log(reason);
  }
  );
  });
@@ -78262,7 +78262,7 @@ endcmap CMapName currentdict /CMap defineresource pop end end`;
  streamController,
  "error should have stream controller"
  );
- streamController.controller.error(
+ streamController.controller.log(
  wrapReason(data.reason)
  );
  this.#deleteStreamController(
