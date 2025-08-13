@@ -441,7 +441,7 @@
 .basic-grid.no-flip .take-inp.files section.all-files {
    position: relative;
    width: 100%;
-   max-height: 300px;
+   max-height: 240px;
    display: grid;
    justify-content: start;
    align-items: center;
@@ -671,27 +671,80 @@
    gap: calc(var(--s) * 1);
    font-size: calc(var(--s) * 1.4);
    font-family: f7b;
-   border-radius: calc(var(--s) * 0.5);
+   border-radius: calc(var(--s) * 0.8);
    border: none;
-   outline: solid 1px light-dark(#000, #fff);
+   outline: none;
    text-decoration: none;
-   color: light-dark(var(--black), var(--white));
-   background-color: light-dark(#fffd, #000d);
-   transition: 200ms color, 200ms scale, 200ms background-color;
+   color: white;
+   background: linear-gradient(
+      135deg,
+      rgba(30, 58, 138, 0.7) 0%,
+      rgba(30, 42, 90, 0.7) 100%
+   );
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   box-shadow: 0 1px 3px rgba(30, 58, 138, 0.2);
+   transition: 200ms all ease-in-out;
    scale: 1;
    cursor: pointer;
+}
+
+/* Upload Button Specific Styling */
+.basic-grid.flip .take-inp.files .buttons button.upload,
+.basic-grid.no-flip .take-inp.files .buttons button.upload {
+   background: linear-gradient(
+      135deg,
+      rgba(4, 120, 87, 0.7) 0%,
+      rgba(6, 78, 59, 0.7) 100%
+   );
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   box-shadow: 0 1px 3px rgba(4, 120, 87, 0.2);
+}
+
+/* Delete Button Specific Styling */
+.basic-grid.flip .take-inp.files .buttons button.delete-all,
+.basic-grid.no-flip .take-inp.files .buttons button.delete-all {
+   background: linear-gradient(
+      135deg,
+      rgba(185, 28, 28, 0.7) 0%,
+      rgba(153, 27, 27, 0.7) 100%
+   );
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   box-shadow: 0 1px 3px rgba(185, 28, 28, 0.2);
 }
 
 .basic-grid.flip .take-inp.files .buttons button span,
 .basic-grid.no-flip .take-inp.files .buttons button span {
    word-spacing: 4px;
+   font-weight: 600;
 }
 
 .basic-grid.flip .take-inp.files .buttons button:hover,
 .basic-grid.no-flip .take-inp.files .buttons button:hover {
-   background-color: light-dark(#000, #fff);
-   color: light-dark(var(--white), var(--black));
-   scale: 1.02;
+   transform: translateY(-1px);
+   box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3);
+   border-color: rgba(255, 255, 255, 0.2);
+   scale: 1.01;
+}
+
+/* Upload Button Hover */
+.basic-grid.flip .take-inp.files .buttons button.upload:hover,
+.basic-grid.no-flip .take-inp.files .buttons button.upload:hover {
+   box-shadow: 0 2px 6px rgba(4, 120, 87, 0.3);
+   border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Delete Button Hover */
+.basic-grid.flip .take-inp.files .buttons button.delete-all:hover,
+.basic-grid.no-flip .take-inp.files .buttons button.delete-all:hover {
+   box-shadow: 0 2px 6px rgba(185, 28, 28, 0.3);
+   border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Active/Pressed State */
+.basic-grid.flip .take-inp.files .buttons button:active,
+.basic-grid.no-flip .take-inp.files .buttons button:active {
+   transform: translateY(0px);
+   scale: 0.99;
 }
 
 /* ======================================================================

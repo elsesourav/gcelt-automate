@@ -63,8 +63,7 @@ body {
    font-family: f3;
    width: calc(var(--ww) * 2);
    height: calc(var(--wh));
-   overflow-y: auto;
-   overflow-x: hidden;
+   overflow: hidden;
    padding: calc(var(--s) * 2);
    background-color: light-dark(#cbcde2, #282a38);
    background-image: radial-gradient(
@@ -78,14 +77,14 @@ body {
       --m: calc(var(--s) * 1.8);
       position: relative;
       width: calc(100% - var(--m) * 0);
-      height: auto;
-      min-height: calc(100vh - var(--s) * 4);
+      height: calc(100vh - var(--s) * 4);
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
       gap: calc(var(--s) * 2);
-      overflow: visible;
+      overflow-y: auto;
+      overflow-x: hidden;
    }
 }
 

@@ -30,8 +30,11 @@ onload = async () => {
       }
       SETTING_DATA = val;
 
+      console.log(val);
+
       toggleSettingInputs.forEach((inp) => {
          if (inp.type === "number") inp.value = val[inp.name] || 0;
+         else if (inp.type === "range") inp.value = val[inp.name] || inp.value;
          else if (inp.type === "checkbox") inp.checked = val[inp.name] || false;
          else if (inp.type === "select-one") inp.value = val[inp.name] || "";
          else if (
@@ -41,6 +44,13 @@ onload = async () => {
             inp.value = val[inp.name]?.replace(/,/g, "") || 0;
          else inp.value = val[inp.name] || "";
       });
+
+      // Refresh range sliders after loading settings
+      setTimeout(() => {
+         if (typeof initializeAllRangeSliders === "function") {
+            initializeAllRangeSliders();
+         }
+      }, 50);
    });
 };
 
@@ -101,8 +111,6 @@ pdfInput.on("change", async (e) => {
          chromeStorageSetLocal(KEYS.STORAGE_PDF, OLD_PDF);
          createHtmlFileElement(OLD_PDF, allFileElementList);
 
-         console.log("Stored PDF files:", OLD_PDF);
-
          // Initialize search after upload
          setTimeout(() => {
             if (typeof initializePDFSearch === "function") {
@@ -148,16 +156,62 @@ function saveSettingData() {
    chromeStorageGetLocal(KEYS.STORAGE_POPUP_SETTINGS, (val) => {
       if (!val) val = {};
 
+      // Handle range sliders first to ensure proper min/max order
+      const rangeSliders = document.querySelectorAll(
+         'input[type="range"].input-setting'
+      );
+      const rangeGroups = {};
+
+      // Group range sliders by their naming pattern
+      rangeSliders.forEach((inp) => {
+         const name = inp.name;
+         if (name.includes("MIN_") || name.includes("MAX_")) {
+            const baseName = name.replace(/^(MIN_|MAX_)/, "");
+            if (!rangeGroups[baseName]) rangeGroups[baseName] = {};
+            rangeGroups[baseName][name.startsWith("MIN_") ? "min" : "max"] = {
+               input: inp,
+               value: parseInt(inp.value),
+            };
+         }
+      });
+
+      // Process range groups to ensure logical min/max order
+      Object.keys(rangeGroups).forEach((baseName) => {
+         const group = rangeGroups[baseName];
+         if (group.min && group.max) {
+            const minVal = Math.min(group.min.value, group.max.value);
+            const maxVal = Math.max(group.min.value, group.max.value);
+            val[`MIN_${baseName}`] = minVal;
+            val[`MAX_${baseName}`] = maxVal;
+         }
+      });
+
+      // Handle all other inputs
       toggleSettingInputs.forEach((inp) => {
-         if (inp.type === "number") val[inp.name] = inp.value || 0;
-         else if (inp.type === "checkbox") val[inp.name] = inp.checked;
-         else if (inp.type === "select-one") val[inp.name] = inp.value;
-         else if (
+         // Skip range inputs as they're already handled above
+         if (
+            inp.type === "range" &&
+            (inp.name.includes("MIN_") || inp.name.includes("MAX_"))
+         ) {
+            return;
+         }
+
+         if (inp.type === "number") {
+            val[inp.name] = inp.value || 0;
+         } else if (inp.type === "range") {
+            val[inp.name] = inp.value || 0;
+         } else if (inp.type === "checkbox") {
+            val[inp.name] = inp.checked;
+         } else if (inp.type === "select-one") {
+            val[inp.name] = inp.value;
+         } else if (
             inp.getAttribute("inputmode") === "numeric" &&
             inp.type === "text"
-         )
+         ) {
             val[inp.name] = inp.value.replace(/,/g, "") || 0;
-         else val[inp.name] = inp.value || "";
+         } else {
+            val[inp.name] = inp.value || "";
+         }
       });
 
       SETTING_DATA = val;

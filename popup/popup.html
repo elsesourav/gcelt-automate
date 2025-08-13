@@ -71,25 +71,6 @@
                   <div class="gap x2"></div>
 
                   <div class="take-inp files">
-                     <div class="gap x2"></div>
-                     <div class="buttons">
-                        <input
-                           type="file"
-                           id="pdfFileInput"
-                           multiple
-                           accept=".pdf"
-                           class="input-file"
-                        />
-                        <button class="btn delete-all" id="pdfDeleteButton">
-                           <span>DELETE ALL PDF</span>
-                           <i class="sbi-delete-sweep"></i>
-                        </button>
-                        <button class="btn upload" id="pdfUploadButton">
-                           <span>UPLOAD PDFS</span>
-                           <i class="sbi-upload4"></i>
-                        </button>
-                     </div>
-
                      <!-- Search Section -->
                      <div class="pdf-search-wrapper">
                         <div class="search-input-container">
@@ -120,6 +101,24 @@
                            </div>
                         </div> -->
                      </section>
+
+                     <div class="buttons">
+                        <input
+                           type="file"
+                           id="pdfFileInput"
+                           multiple
+                           accept=".pdf"
+                           class="input-file"
+                        />
+                        <button class="btn delete-all" id="pdfDeleteButton">
+                           <span>DELETE ALL PDF</span>
+                           <i class="sbi-delete-sweep"></i>
+                        </button>
+                        <button class="btn upload" id="pdfUploadButton">
+                           <span>UPLOAD PDFS</span>
+                           <i class="sbi-upload4"></i>
+                        </button>
+                     </div>
                   </div>
 
                   <div class="take-inp check-box full-width">
@@ -143,8 +142,24 @@
                   <div class="take-inp full-width range-slider-container">
                      <label>Select Page Range</label>
                      <div class="dual-range-slider">
-                        <input type="range" min="1" max="25" value="20" />
-                        <input type="range" min="1" max="25" value="25" />
+                        <input
+                           type="range"
+                           id="minPageRange"
+                           name="MIN_PAGE_RANGE_CA1_AND_CA2"
+                           class="input-setting"
+                           min="1"
+                           max="25"
+                           value="20"
+                        />
+                        <input
+                           type="range"
+                           id="maxPageRange"
+                           name="MAX_PAGE_RANGE_CA1_AND_CA2"
+                           class="input-setting"
+                           min="1"
+                           max="25"
+                           value="25"
+                        />
                         <div class="slider-track"></div>
                         <div class="slider-progress"></div>
                      </div>

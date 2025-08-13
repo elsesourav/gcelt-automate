@@ -15,6 +15,19 @@ function createHtmlFileElement(FILES, PARENT) {
       }
    }
 
+   const totalFiles =
+      badFiles.length + nonSubmittedFiles.length + otherFiles.length;
+
+   // Hide/show search section based on file count
+   const searchWrapper = document.querySelector(".pdf-search-wrapper");
+   if (searchWrapper) {
+      if (totalFiles === 0) {
+         searchWrapper.style.display = "none";
+      } else {
+         searchWrapper.style.display = "block";
+      }
+   }
+
    for (const file of [...badFiles, ...nonSubmittedFiles, ...otherFiles]) {
       const { name, bad, rollNumber } = file;
       const isSubmitted = file?.submitted || false;
@@ -31,7 +44,7 @@ function createHtmlFileElement(FILES, PARENT) {
             </div>
             <div class="file-actions">
                <button class="edit-file-btn" title="Edit filename">
-               <i class="sbi-edit-1"></i>
+               <i class="sbi-pencil1"></i>
                </button>
                <button class="delete-file-btn" title="Delete file">
                <i class="sbi-trash"></i>
@@ -272,12 +285,30 @@ function deleteFile(fileKey, fileElement) {
 
          // Show success message
          if (typeof AlertHTML !== "undefined") {
-            AlertHTML("File deleted successfully", "success", 2);
+            const successAlert = new AlertHTML({
+               title: "Success",
+               titleColor: "#4caf50",
+               titleIcon: "sbi-check-circle",
+               message: "File deleted successfully",
+               btnNm1: "OK",
+               oneBtn: true,
+            });
+            successAlert.show();
+            successAlert.clickBtn1(() => successAlert.hide());
          }
       } catch (error) {
          console.error("Error deleting file:", error);
          if (typeof AlertHTML !== "undefined") {
-            AlertHTML("Error deleting file", "error", 3);
+            const errorAlert = new AlertHTML({
+               title: "Error",
+               titleColor: "#ff4444",
+               titleIcon: "sbi-warning",
+               message: "Error deleting file",
+               btnNm1: "OK",
+               oneBtn: true,
+            });
+            errorAlert.show();
+            errorAlert.clickBtn1(() => errorAlert.hide());
          }
       }
    });
@@ -328,32 +359,36 @@ function setupDualRangeSlider(minInput, maxInput, display, progress) {
       let minVal = parseInt(minInput.value);
       let maxVal = parseInt(maxInput.value);
 
-      // Prevent overlapping
-      if (maxVal <= minVal) {
-         if (document.activeElement === minInput) {
-            minInput.value = maxVal - 1;
-            minVal = maxVal - 1;
-         } else {
-            maxInput.value = minVal + 1;
-            maxVal = minVal + 1;
-         }
-      }
+      // Ensure both values are positive
+      minVal = Math.max(0, minVal);
+      maxVal = Math.max(0, maxVal);
+
+      minInput.value = minVal;
+      maxInput.value = maxVal;
+
+      // For display, show smaller value first regardless of which input it comes from
+      const displayMin = Math.min(minVal, maxVal);
+      const displayMax = Math.max(minVal, maxVal);
 
       // Update display
       if (display) {
-         display.textContent = `${minVal} - ${maxVal}`;
+         display.textContent = `${displayMin} - ${displayMax}`;
       }
 
-      // Update progress bar
-      const percentMin = ((minVal - min) / (max - min)) * 100;
-      const percentMax = ((maxVal - min) / (max - min)) * 100;
+      // Update progress bar using actual display values
+      const percentMin = ((displayMin - min) / (max - min)) * 100;
+      const percentMax = ((displayMax - min) / (max - min)) * 100;
 
       progress.style.left = `${percentMin}%`;
       progress.style.width = `${percentMax - percentMin}%`;
 
       // Dispatch custom event for external listeners
       const event = new CustomEvent("rangeChanged", {
-         detail: { min: minVal, max: maxVal, range: maxVal - minVal },
+         detail: {
+            min: displayMin,
+            max: displayMax,
+            range: displayMax - displayMin,
+         },
       });
       minInput.dispatchEvent(event);
    }
@@ -361,13 +396,30 @@ function setupDualRangeSlider(minInput, maxInput, display, progress) {
    // Add event listeners
    minInput.addEventListener("input", updateSlider);
    maxInput.addEventListener("input", updateSlider);
-   minInput.addEventListener("change", updateSlider);
-   maxInput.addEventListener("change", updateSlider);
+   minInput.addEventListener("change", () => {
+      updateSlider();
+      // Trigger save if the input has the setting class
+      if (
+         minInput.classList.contains("input-setting") &&
+         typeof saveSettingData === "function"
+      ) {
+         saveSettingData();
+      }
+   });
+   maxInput.addEventListener("change", () => {
+      updateSlider();
+      // Trigger save if the input has the setting class
+      if (
+         maxInput.classList.contains("input-setting") &&
+         typeof saveSettingData === "function"
+      ) {
+         saveSettingData();
+      }
+   });
 
    // Initial update
    updateSlider();
 }
-
 /**
  * Sets up single range slider logic for given elements
  */
@@ -485,35 +537,6 @@ function initializeTabNavigation() {
       });
    });
 
-   // Keyboard navigation support
-   navTabs.forEach((tab, index) => {
-      tab.addEventListener("keydown", (e) => {
-         let targetIndex = index;
-
-         switch (e.key) {
-            case "ArrowLeft":
-               targetIndex = index > 0 ? index - 1 : navTabs.length - 1;
-               break;
-            case "ArrowRight":
-               targetIndex = index < navTabs.length - 1 ? index + 1 : 0;
-               break;
-            case "Home":
-               targetIndex = 0;
-               break;
-            case "End":
-               targetIndex = navTabs.length - 1;
-               break;
-            default:
-               return; // Exit if other key
-         }
-
-         e.preventDefault();
-         navTabs[targetIndex].focus();
-         const tabTarget = navTabs[targetIndex].getAttribute("data-tab");
-         switchTab(tabTarget);
-      });
-   });
-
    // Make tabs focusable
    navTabs.forEach((tab, index) => {
       tab.setAttribute("tabindex", index === 0 ? "0" : "-1");
@@ -569,12 +592,6 @@ function initializePDFSearch() {
    const clearButton = document.getElementById("clearSearchBtn");
    const filesList = document.getElementById("allFileElementList");
 
-   console.log("Initializing PDF search...", {
-      searchInput: !!searchInput,
-      clearButton: !!clearButton,
-      filesList: !!filesList,
-   });
-
    if (!searchInput || !clearButton || !filesList) {
       console.log("PDF search elements not found - skipping initialization");
       return;
@@ -596,8 +613,6 @@ function initializePDFSearch() {
       const files = filesList.querySelectorAll(".file");
       const term = searchTerm.toLowerCase().trim();
       let visibleCount = 0;
-
-      console.log(`Searching for: "${term}", Found ${files.length} files`);
 
       // Remove existing no-results message
       const existingMessage = filesList.querySelector(".no-results-message");
@@ -641,8 +656,6 @@ function initializePDFSearch() {
          freshClearButton.style.visibility = "hidden";
          freshClearButton.style.transform = "scale(0.8)";
       }
-
-      console.log(`Search complete: ${visibleCount} files visible`);
    }
 
    // Search input event listener with debouncing
@@ -677,8 +690,6 @@ function initializePDFSearch() {
          performSearch(freshSearchInput.value);
       }
    });
-
-   console.log("PDF search initialized successfully!");
 }
 
 /**
@@ -686,7 +697,6 @@ function initializePDFSearch() {
  */
 document.addEventListener("DOMContentLoaded", () => {
    setTimeout(() => {
-      console.log("DOM loaded - initializing PDF search");
       initializePDFSearch();
    }, 500);
 });
@@ -694,7 +704,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // Also try to initialize when the window loads
 window.addEventListener("load", () => {
    setTimeout(() => {
-      console.log("Window loaded - initializing PDF search");
       initializePDFSearch();
    }, 500);
 });
