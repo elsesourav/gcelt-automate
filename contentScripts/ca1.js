@@ -278,11 +278,10 @@ async function readyUploadRubrics() {
    const fileInput = document.getElementById("teacher_document");
    const isAlreadyUploaded = fileInput.files.length > 0;
    const ca1PDFDataURL = await getRubricsPDFBlobForCA1(true);
-   const { filename } = getPdfDetailsForCA1();
 
    const data = {
       content: ca1PDFDataURL,
-      name: filename
+      name: "GCELT CA1 Rubrics.pdf",
    };
 
    if (isAlreadyUploaded) {
