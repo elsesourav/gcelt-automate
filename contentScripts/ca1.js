@@ -162,12 +162,16 @@ function purMarksForCA1(isOverwrite, minMarks, maxMarks) {
    for (let tr of trElements) {
       const marksInput = tr.querySelector("input[type='text']");
       const fileInput = tr.querySelector("input[type='file']");
+      const isAlreadyUploaded2 = tr.querySelector("td div a.btn.btn-info");
 
       const isAlreadyUploaded = fileInput.files.length > 0;
       const isAlreadyPut = marksInput.value !== "";
       marksInput.style.border = "";
 
-      if (isAlreadyUploaded && (!isAlreadyPut || isOverwrite)) {
+      if (
+         (isAlreadyUploaded || isAlreadyUploaded2) &&
+         (!isAlreadyPut || isOverwrite)
+      ) {
          marksInput.value = getRandomMarks(minMarks, maxMarks);
          marksInput.style.border = "solid 2px #0f0";
       }
@@ -183,6 +187,7 @@ async function putPdfFilesForCA1(isOverwrite, PDFS) {
    for (let tr of trElements) {
       const rollNoStr = tr.querySelectorAll("td")?.[1]?.innerText;
       const fileInput = tr.querySelector("input[type='file']");
+      const isAlreadyUploaded2 = tr.querySelector("td div a.btn.btn-info");
       const rollNo = extractRoll(rollNoStr);
       const studentPdfFile = PDFS?.[rollNo];
 
@@ -190,7 +195,7 @@ async function putPdfFilesForCA1(isOverwrite, PDFS) {
       fileInput.dataset.action = "";
 
       const isAlreadyUploaded = fileInput.files.length > 0;
-      if (!studentPdfFile || (isAlreadyUploaded && !isOverwrite)) continue;
+      if (!studentPdfFile || ((isAlreadyUploaded || isAlreadyUploaded2) && !isOverwrite)) continue;
 
       SUBMIT_PDF_KEYS.push(rollNo);
 
