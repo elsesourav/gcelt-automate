@@ -224,10 +224,24 @@ function setupActionButtons() {
          setupUploadCA3();
       } else if (itIsUploadPageForCA1()) {
          setupScriptForCA1();
+      } else if (itIsUploadPageForCA2()) {
+         setupScriptForCA2();
       }
-   } else if (isFwPdf && (itIsUploadPageForCA3() || itIsUploadPageForCA1())) {
+   } else if (
+      isFwPdf &&
+      (itIsUploadPageForCA3() ||
+         itIsUploadPageForCA1() ||
+         itIsUploadPageForCA2())
+   ) {
       fwPdf.style.display = "flex";
-   } else if (isFwPdf && !(itIsUploadPageForCA3() || itIsUploadPageForCA1())) {
+   } else if (
+      isFwPdf &&
+      !(
+         itIsUploadPageForCA3() ||
+         itIsUploadPageForCA1() ||
+         itIsUploadPageForCA2()
+      )
+   ) {
       fwPdf.style.display = "none";
    }
 }
@@ -238,6 +252,8 @@ onload = async () => {
       setupUploadCA3();
    } else if (itIsUploadPageForCA1()) {
       setupScriptForCA1();
+   } else if (itIsUploadPageForCA2()) {
+      setupScriptForCA2();
    }
 
    if (itIsCA3EvaluationPage()) {

@@ -1,4 +1,4 @@
-function getRubricsDataForCA1() {
+function getRubricsDataForCA2() {
    const rubricsData = [];
    const trElements = document.querySelectorAll(
       "#marksEntrySectionCA .well.with-header table tbody tr"
@@ -26,7 +26,7 @@ function getRubricsDataForCA1() {
    return rubricsData;
 }
 
-function getRowsDataArrayForCA1(rubricsData) {
+function getRowsDataArrayForCA2(rubricsData) {
    if (rubricsData && typeof rubricsData === "object") {
       // convert object to array
       let data = Object.entries(rubricsData).map(([key, value]) => ({
@@ -48,11 +48,11 @@ function getRowsDataArrayForCA1(rubricsData) {
    return [];
 }
 
-function getRubricsOptionsForCA1({
+function getRubricsOptionsForCA2({
    title = "",
    subtitle = "",
    rowsdata = [],
-   filename = "GCELT_CA1_Assessment_Rubrics.pdf",
+   filename = "GCELT_CA2_Assessment_Rubrics.pdf",
 }) {
    return {
       title,
@@ -64,36 +64,36 @@ function getRubricsOptionsForCA1({
             { text: "ROLL NO.", width: 12, align: "center", fontSize: 7 },
             { text: "STUDENT NAME", width: 24, align: "left", fontSize: 7 },
             {
-               text: "BACKGROUND\n(05)",
+               text: "Report\nOrganization(05)",
                width: 11,
                align: "center",
                fontSize: 6,
             },
             {
-               text: "CONTENT\nACCURACY (05)",
+               text: "Aesthetics\n(05)",
                width: 11,
                align: "center",
                fontSize: 6,
             },
             {
-               text: "SPELLING AND\nGRAMMAR (05)",
+               text: "Spelling &\nGrammar (05)",
                width: 11,
                align: "center",
                fontSize: 6,
             },
             {
-               text: "EFFECTIVENESS\n(05)",
+               text: "Results-Presented\nMethodology\nClearly(05)",
                width: 11,
                align: "center",
                fontSize: 6,
             },
             {
-               text: "PRESENTATION\n(05)",
+               text: "Conclusions/\nRecommendations\npresent &\nsignificance\nexplained (05)",
                width: 11,
                align: "center",
                fontSize: 6,
             },
-            { text: "TOTAL", width: 11, align: "center", fontSize: 7 },
+            { text: "TOTAL (25)", width: 11, align: "center", fontSize: 7 },
          ],
          ...rowsdata,
       ],
@@ -101,7 +101,7 @@ function getRubricsOptionsForCA1({
    };
 }
 
-function getPdfDetailsForCA1() {
+function getPdfDetailsForCA2() {
    const filterElements = document.querySelectorAll(".filter-option.pull-left");
    const semesterElement = document.getElementById("semester");
    const caElement = document.getElementById("Entry_Type");
@@ -123,13 +123,13 @@ function getPdfDetailsForCA1() {
    };
 }
 
-async function getRubricsPDFBlobForCA1(needDataURL = false) {
-   const rubricsData = getRubricsDataForCA1();
-   const rowsData = getRowsDataArrayForCA1(rubricsData);
+async function getRubricsPDFBlobForCA2(needDataURL = false) {
+   const rubricsData = getRubricsDataForCA2();
+   const rowsData = getRowsDataArrayForCA2(rubricsData);
 
-   const { title, subtitle, filename } = getPdfDetailsForCA1();
+   const { title, subtitle, filename } = getPdfDetailsForCA2();
 
-   const rubricsOptions = getRubricsOptionsForCA1({
+   const rubricsOptions = getRubricsOptionsForCA2({
       rowsdata: rowsData,
       title,
       subtitle,
@@ -154,7 +154,7 @@ async function getRubricsPDFBlobForCA1(needDataURL = false) {
    }
 }
 
-function purMarksForCA1(isOverwrite, minMarks, maxMarks) {
+function purMarksForCA2(isOverwrite, minMarks, maxMarks) {
    const trElements = document.querySelectorAll(
       "#marksEntrySectionCA .well.with-header table tbody tr"
    );
@@ -178,7 +178,7 @@ function purMarksForCA1(isOverwrite, minMarks, maxMarks) {
    }
 }
 
-async function putPdfFilesForCA1(isOverwrite, PDFS) {
+async function putPdfFilesForCA2(isOverwrite, PDFS) {
    const SUBMIT_PDF_KEYS = [];
 
    const trElements = document.querySelectorAll(
@@ -207,7 +207,7 @@ async function putPdfFilesForCA1(isOverwrite, PDFS) {
    uploadPdfConfirmation(SUBMIT_PDF_KEYS);
 }
 
-async function readyPurMarksForCA1() {
+async function readyPurMarksForCA2() {
    const PDF_FILE_DATA = await getPdfData();
    if (!PDF_FILE_DATA) {
       console.log("No PDF data available");
@@ -240,11 +240,11 @@ async function readyPurMarksForCA1() {
 
       () => console.log("Cancelled!"),
       () =>
-         purMarksForCA1(OVERWRITE_CA1_AND_CA2_MARKS, minimumMarks, maximumMarks)
+         purMarksForCA2(OVERWRITE_CA1_AND_CA2_MARKS, minimumMarks, maximumMarks)
    );
 }
 
-async function readyPutPdfFilesForCA1() {
+async function readyPutPdfFilesForCA2() {
    try {
       const PDF_FILE_DATA = await getPdfData();
       if (!PDF_FILE_DATA) {
@@ -263,30 +263,30 @@ async function readyPutPdfFilesForCA1() {
                : ""
          }`,
          () => console.log("Cancelled!"),
-         () => putPdfFilesForCA1(OVERWRITE_PDF_FILES, PDFS)
+         () => putPdfFilesForCA2(OVERWRITE_PDF_FILES, PDFS)
       );
    } catch (error) {
       console.error("PDF upload process failed:", error);
    }
 }
 
-function readyForSubmitCA1() {
+function readyForSubmitCA2() {
    showConfirm(
       "Submit Confirmation",
       "Are you sure you want to submit these PDFs?",
       () => console.log("Cancelled!"),
-      () => submitCA1PDFsUsingInjectScript()
+      () => submitCA2PDFsUsingInjectScript()
    );
 }
 
 async function readyUploadRubrics() {
    const fileInput = document.getElementById("teacher_document");
    const isAlreadyUploaded = fileInput.files.length > 0;
-   const ca1PDFDataURL = await getRubricsPDFBlobForCA1(true);
+   const ca2PDFDataURL = await getRubricsPDFBlobForCA2(true);
 
    const data = {
-      content: ca1PDFDataURL,
-      name: "GCELT CA1 Rubrics.pdf",
+      content: ca2PDFDataURL,
+      name: "GCELT CA2 Rubrics.pdf",
    };
 
    if (isAlreadyUploaded) {
@@ -306,28 +306,28 @@ async function readyUploadRubrics() {
 }
 
 async function readyDownloadRubrics() {
-   const ca1PdfBlob = await getRubricsPDFBlobForCA1();
-   const { filename } = getPdfDetailsForCA1();
-   if (ca1PdfBlob) {
-      downloadBlobPDF(ca1PdfBlob, filename);
+   const ca2PdfBlob = await getRubricsPDFBlobForCA2();
+   const { filename } = getPdfDetailsForCA2();
+   if (ca2PdfBlob) {
+      downloadBlobPDF(ca2PdfBlob, filename);
    }
 }
 
 async function readyViewRubrics() {
-   const ca1PdfBlob = await getRubricsPDFBlobForCA1(true);
-   const { filename } = getPdfDetailsForCA1();
+   const ca2PdfBlob = await getRubricsPDFBlobForCA2(true);
+   const { filename } = getPdfDetailsForCA2();
 
-   if (ca1PdfBlob) {
+   if (ca2PdfBlob) {
       showPDFPreview({
          title: "Rubrics Preview",
-         pdfContent: ca1PdfBlob,
+         pdfContent: ca2PdfBlob,
          fileName: filename,
          onClose: () => console.log("PDF preview closed"),
       });
    }
 }
 
-function setupScriptForCA1() {
+function setupScriptForCA2() {
    setStyle();
    /* ------- setup button for rubrics ------- */
    const rubricsContainer =
@@ -366,13 +366,13 @@ function setupScriptForCA1() {
    let secondChild = tableParent.children[1];
    tableParent.insertBefore(buttons, secondChild);
 
-   purRandomNumber.addEventListener("click", readyPurMarksForCA1);
-   putPdf.addEventListener("click", readyPutPdfFilesForCA1);
-   submitPdf.addEventListener("click", readyForSubmitCA1);
+   purRandomNumber.addEventListener("click", readyPurMarksForCA2);
+   putPdf.addEventListener("click", readyPutPdfFilesForCA2);
+   submitPdf.addEventListener("click", readyForSubmitCA2);
 
    window.addEventListener("popstate", () => {
-      purRandomNumber.removeEventListener("click", readyPurMarksForCA1);
-      putPdf.removeEventListener("click", readyPutPdfFilesForCA1);
-      submitPdf.removeEventListener("click", readyForSubmitCA1);
+      purRandomNumber.removeEventListener("click", readyPurMarksForCA2);
+      putPdf.removeEventListener("click", readyPutPdfFilesForCA2);
+      submitPdf.removeEventListener("click", readyForSubmitCA2);
    });
 }

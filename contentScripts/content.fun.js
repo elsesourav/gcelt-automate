@@ -3,9 +3,21 @@ function isCA3Page() {
 }
 
 function isCA1Page() {
-   return document.querySelector(
+   const is = document.querySelector(
       "#marksEntrySectionCA .well.with-header table"
    );
+   const caElement = document.getElementById("Entry_Type");
+   const caName = getOutsideParentheses(caElement.selectedOptions[0].innerText);
+   return (is && caName && caName?.toLowerCase()?.includes("ca1")) 
+}
+
+function isCA2Page() {
+   const is = document.querySelector(
+      "#marksEntrySectionCA .well.with-header table"
+   );
+   const caElement = document.getElementById("Entry_Type");
+   const caName = getOutsideParentheses(caElement.selectedOptions[0].innerText);
+   return (is && caName && caName?.toLowerCase()?.includes("ca2")) 
 }
 
 function itIsUploadPageForCA3() {
@@ -18,6 +30,11 @@ function itIsUploadPageForCA3() {
 function itIsUploadPageForCA1() {
    const l = window.location.href;
    return l.includes("ca-marks-entry") && isCA1Page();
+}
+
+function itIsUploadPageForCA2() {
+   const l = window.location.href;
+   return l.includes("ca-marks-entry") && isCA2Page();
 }
 
 function extractRoll(text) {
@@ -53,7 +70,7 @@ function submitCA1PDFsUsingInjectScript() {
    });
 }
 
-function getRubricsForCA1(options) {
+function getRubricsForCA(options) {
    return new Promise(async (resolve) => {
       runtimeSendMessage("C_B_CREATE_RUBRICS_PDF", { options }, (r) => {
          resolve(r);

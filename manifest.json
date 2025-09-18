@@ -32,6 +32,7 @@
             "./offscreen/libs/jspdf.umd.min.js",
             "./querySelector.js",
             "./contentScripts/ca1.js",
+            "./contentScripts/ca2.js",
             "./contentScripts/ca3.js",
             "./contentScripts/style.js",
             "./contentScripts/content.fun.js",
