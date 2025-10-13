@@ -1,7 +1,7 @@
 <h1 align="center">GCELT Automate</h1>
 
 ## Overview
-> GCELT Automate is a Chrome Extension designed to streamline and automate the PDF upload process for GCELT users. It provides an efficient way to handle form submissions and document uploads with automated form filling capabilities.
+> GCELT Automate is a Chrome Extension developed to make the work of GCELT faculty members easier and faster. It helps in uploading PDFs, filling out forms automatically, and managing document submissions without manual effort. The extension can also check answer sheets and automatically assign marks based on the answers. With GCELT Automate, teachers can save time, reduce errors, and focus more on teaching instead of repetitive tasks.
 
 ## Features
 > - **Automated Form Filling:** Automatically fills required form fields

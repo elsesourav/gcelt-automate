@@ -1,7 +1,7 @@
 {
    "name": "GCELT Automating",
-   "version": "1.1.0",
-   "description": "Automating PDF uploads and form submissions at Makaut. (Copyright SouravBarui2025).",
+   "version": "1.2.0",
+   "description": "Automates PDF uploads, form filling, and answer sheet checking with auto-marking for GCELT faculty. (©SouravBarui2025)",
    "manifest_version": 3,
    "permissions": [
       "scripting",
@@ -43,13 +43,16 @@
    "web_accessible_resources": [
       {
          "resources": [
-            "assets/*",
-            "css/*",
-            "offscreen/*",
-            "offscreen/js/*",
-            "offscreen/libs/*",
-            "offscreen/offscreen.html"
-         ],
+				"assets/*",
+				"css/*",
+				"offscreen/*",
+				"offscreen/js/*",
+				"offscreen/libs/*",
+				"offscreen/offscreen.html",
+				"offscreen/OCR/*",
+				"offscreen/OCR/Tesseract/*",
+				"offscreen/OCR/Lang/*"
+			],
          "matches": ["https://makaut1.ucanapply.com/*"]
       }
    ],

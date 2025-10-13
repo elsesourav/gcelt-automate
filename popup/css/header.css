@@ -54,23 +54,21 @@ header {
             position: relative;
             justify-content: center;
             align-items: center;
-            font-family: f5b;
+            font-family: f3;
             font-size: calc(var(--s) * 1.5);
             display: flex;
-            gap: 0;
+            gap: 5px;
    
-            .first {
+            .a {
                color: #ff4d00;
             }
    
-            .second {
+            .b {
                color: #00ffd9;
             }
    
-            .third {
-               font-family: f6b;
+            .c {
                color: light-dark(#000, #fff);
-               font-size: calc(var(--s) * 1.1);
             }
          }
       }

@@ -211,7 +211,13 @@ function chromeStorageGet(key, callback = () => {}) {
 
 function setInputLikeHuman(element) {
    const event = new Event("change", { bubbles: true });
-   element.dispatchEvent(event);
+   element?.dispatchEvent(event);
+}
+
+function setClickLikeHuman(element) {
+   const event = new Event("change", { bubbles: true });
+   element?.click();
+   element?.dispatchEvent(event);
 }
 
 function shuffleArray(array) {
