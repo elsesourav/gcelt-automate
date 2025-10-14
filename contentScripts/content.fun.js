@@ -49,6 +49,14 @@ function itIsCA3EvaluationPage() {
   );
 }
 
+function itIsCA3EvaluationForm() {
+  return (
+		window.location.href.includes("makaut1.ucanapply.com") &&
+		window.location.href.includes("evaluation-ca") &&
+		document.getElementById("markEvaluationSection")
+  );
+}
+
 function uploadPdfConfirmation(UPLOADED_PDF_KEYS) {
   return new Promise(async (resolve) => {
     runtimeSendMessage("c_b_success_upload_pdf", { UPLOADED_PDF_KEYS }, (r) => {
@@ -93,13 +101,22 @@ function submitCA3PDFsUsingInjectScript() {
   });
 }
 
-function readPdfAndMarksGiven() {
-  return new Promise(async (resolve) => {
-    runtimeSendMessage("C_B_INJECT_READ_PDF_AND_PUT_MARKS", (r) => {
-      resolve(r);
-      // console.log("Post-upload script injection successful");
-    });
-  });
+function getCA3PdfTextAndDoTickMarks() {
+	return new Promise(async (resolve) => {
+		runtimeSendMessage("C_B_INJECT_READ_PDF_TEXT", (r) => {
+			resolve(r);
+			// console.log("Post-upload script injection successful");
+		});
+	});
+}
+
+function submitCA3AnswerSheetInjectScript() {
+	return new Promise(async (resolve) => {
+		runtimeSendMessage("C_B_INJECT_CA3_ANSWER_SHEET_SUBMISSION", (r) => {
+			resolve(r);
+			// console.log("Post-upload script injection successful");
+		});
+	});
 }
 
 function getPdfData() {

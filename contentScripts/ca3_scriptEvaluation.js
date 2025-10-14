@@ -1,97 +1,331 @@
+function calculateTotalMarksForCA3({
+	text,
+	pageCount,
+	maxMarks = 25,
+	minMarks = 18,
+	perPageMarks = 1,
+	marksIn30Words = 4,
+	addRandom = false,
+}) {
+	// Calculate word count (approximate)
+	const wordLength = text.trim().split(/\s+/).length;
+	const wordCount = wordLength * 1.8; // Adjusted for accuracy
+
+	// Calculate marks based on different criteria
+	const marksFromPages = pageCount * perPageMarks;
+	const marksFromWords = Math.floor(wordCount / 30) * marksIn30Words;
+
+	// Calculate total marks and ensure it's within min/max range
+	let totalMarks = marksFromPages + marksFromWords;
+	totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
+
+	if (addRandom) {
+		const randomVariation = Math.floor(Math.random() * 5) - 2; // Random: -2 to +2
+		totalMarks = totalMarks + randomVariation;
+		totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
+	}
+
+	return totalMarks;
+}
+
+/**
+ * Calculate marks distribution between 1-mark and 5-mark questions using randomization
+ * @param {number} totalMarks - Total marks to distribute
+ * @param {number} max1MarkQuestions - Maximum 1-mark questions (default: 5)
+ * @param {number} max5MarkQuestions - Maximum 5-mark questions (default: 4)
+ * @returns {Object} Distribution of marks { oneMarkCount, fiveMarkDistribution, totalDistributed }
+ */
+function calculateMarksDistribution(
+	totalMarks,
+	max1MarkQuestions = 5,
+	max5MarkQuestions = 4
+) {
+	// Randomly decide how many 1-mark questions to give (between 0 and max possible)
+	const maxPossible1Marks = Math.min(totalMarks, max1MarkQuestions);
+	const min1Marks = Math.max(0, maxPossible1Marks - 2); // At least maxPossible1Marks - 2
+	const oneMarkCount =
+		Math.floor(Math.random() * (maxPossible1Marks - min1Marks + 1)) +
+		min1Marks;
+
+	let remainingMarks = totalMarks - oneMarkCount;
+
+	// Calculate how many 5-mark slots we need
+	const num5MarkSlots = Math.min(
+		Math.ceil(remainingMarks / 5),
+		max5MarkQuestions
+	);
+
+	// Distribute remaining marks across 5-mark slots with randomization
+	const fiveMarkDistribution = [];
+	if (num5MarkSlots > 0) {
+		const baseMarks = Math.floor(remainingMarks / num5MarkSlots);
+		const extraMarks = remainingMarks % num5MarkSlots;
+
+		// Create base distribution
+		for (let i = 0; i < num5MarkSlots; i++) {
+			fiveMarkDistribution.push(baseMarks + (i < extraMarks ? 1 : 0));
+		}
+
+		// Shuffle the distribution array for randomness
+		for (let i = fiveMarkDistribution.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[fiveMarkDistribution[i], fiveMarkDistribution[j]] = [
+				fiveMarkDistribution[j],
+				fiveMarkDistribution[i],
+			];
+		}
+	}
+
+	const totalDistributed =
+		oneMarkCount + fiveMarkDistribution.reduce((sum, mark) => sum + mark, 0);
+
+	return {
+		oneMarkCount, // Number of 1-mark questions to give
+		fiveMarkDistribution, // Array of marks for each 5-mark question
+		totalDistributed, // Total marks distributed
+		remainingMarks: totalMarks - totalDistributed,
+	};
+}
+
+/**
+ * Helper function to shuffle an array
+ */
 function shuffleArray(array) {
 	for (let i = array.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-		[array[i], array[j]] = [array[j], array[i]]; // swap elements
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
 	}
 	return array;
 }
 
-function getQuadraticBezierXY(t, start, control, end) {
-	const x =
-		Math.pow(1 - t, 2) * start.x +
-		2 * (1 - t) * t * control.x +
-		Math.pow(t, 2) * end.x;
-	const y =
-		Math.pow(1 - t, 2) * start.y +
-		2 * (1 - t) * t * control.y +
-		Math.pow(t, 2) * end.y;
-	return { x, y };
+/**
+ * Helper function to trigger change event on input elements
+ */
+function setInputLikeHuman(element) {
+	const event = new Event("change", { bubbles: true });
+	element.dispatchEvent(event);
 }
 
-// Helper to fire mouse events
-function fireMouseEvent(type, x, y, buttons = 1) {
-	const event = new MouseEvent(type, {
-		view: window,
-		bubbles: true,
-		cancelable: true,
-		clientX: x,
-		clientY: y,
-		buttons: buttons,
-		button: type === "mouseup" ? 0 : 0,
-		relatedTarget: null,
-		screenX: x,
-		screenY: y,
+/**
+ * Groups mark rows by their total mark value (1, 5, etc.)
+ * @returns {Object} Grouped elements by mark value
+ */
+function groupMarkRowsByValue() {
+	const marksRows = document.querySelectorAll("table tbody tr");
+	const marksDev = {};
+
+	marksRows.forEach((row) => {
+		const TD = row.querySelectorAll("td");
+		const [_, __, ___, totalTD] = TD;
+		const total = totalTD.innerText.replace("/", "").trim();
+
+		if (!marksDev[total]) {
+			marksDev[total] = {
+				elements: [TD],
+				value: 1,
+			};
+		} else {
+			marksDev[total].value++;
+			marksDev[total].elements.push(TD);
+		}
 	});
-	return canvas.dispatchEvent(event);
+
+	return marksDev;
 }
 
-// Simulate smooth Bezier-based drag
-function simulateBezierDrag(canvas, steps = 20, delay = 1, stepDelay = 1) {
-	return new Promise(async (resolve) => {
-		const rect = canvas.getBoundingClientRect();
-		const width = rect.width;
-		const height = rect.height;
+/**
+ * Apply marks to 1-mark question rows
+ * @param {Object} marksDev - Grouped marks data
+ * @param {number} oneMarkCount - Number of 1-mark questions to give marks
+ * @returns {number} Marks given
+ */
+function applyOneMarkQuestions(marksDev, oneMarkCount) {
+	let marksGiven = 0;
 
-		const deltaW = width / 5;
-		const deltaH = height / 5;
+	if (marksDev["1"]) {
+		const tds = marksDev["1"].elements;
+		const shuffledTds = shuffleArray([...tds]);
 
-		const startX = width / 2 + Math.random() * deltaW;
-		const startY = height / 2 + Math.random() * deltaH;
-
-		const endX = startX + (Math.random() * (deltaW / 2) + 30);
-		const endY = startY + (Math.random() * (deltaH / 2) + 30);
-
-		const toClient = (x, y) => ({
-			x: rect.left + x,
-			y: rect.top + y,
+		shuffledTds.forEach((tds) => {
+			if (marksGiven < oneMarkCount) {
+				marksGiven++;
+				const markInput = tds[1].querySelector(`input[type="text"]`);
+				markInput.value = 1;
+			} else {
+				const markInput = tds[2].querySelector(`input[type="checkbox"]`);
+				markInput.checked = true;
+				setInputLikeHuman(markInput);
+			}
 		});
+	}
 
-		const start = toClient(startX, startY);
-		const end = toClient(endX, endY);
+	return marksGiven;
+}
 
-		const control = {
-			x: (start.x + end.x) / 2 + (Math.random() * 30 - 15),
-			y: (start.y + end.y) / 2 - 40,
-		};
+/**
+ * Apply marks to 5-mark question rows
+ * @param {Object} marksDev - Grouped marks data
+ * @param {Array<number>} fiveMarkDistribution - Array of marks for each 5-mark question
+ */
+function applyFiveMarkQuestions(marksDev, fiveMarkDistribution) {
+	let marksGiven = 0;
 
-		fireMouseEvent("mousedown", start.x, start.y);
-		await wait(stepDelay);
+	if (marksDev["5"] && fiveMarkDistribution.length > 0) {
+		const tds = marksDev["5"].elements;
+		const shuffledTds = shuffleArray([...tds]);
 
-		// Move along the curve
-		for (let i = 1; i <= steps; i++) {
-			const t = i / steps;
-			const { x, y } = getQuadraticBezierXY(t, start, control, end);
-			fireMouseEvent("mousemove", x, y);
-			await wait(delay);
+		shuffledTds.forEach((tds, i) => {
+			if (fiveMarkDistribution[i]) {
+				marksGiven += fiveMarkDistribution[i];
+				const markInput = tds[1].querySelector(`input[type="text"]`);
+				markInput.value = fiveMarkDistribution[i];
+			} else {
+				const markInput = tds[2].querySelector(`input[type="checkbox"]`);
+				markInput.checked = true;
+				setInputLikeHuman(markInput);
+			}
+		});
+	}
+
+	return marksGiven;
+}
+
+/**
+ * Main function to apply marks to all questions based on distribution
+ * @param {Object} distribution - Distribution object from calculateMarksDistribution
+ */
+function applyMarksToQuestions(distribution) {
+	const { oneMarkCount, fiveMarkDistribution } = distribution;
+
+	// Group mark rows by value
+	const marksDev = groupMarkRowsByValue();
+
+	// Apply marks to 1-mark questions
+	const oneMarksGiven = applyOneMarkQuestions(marksDev, oneMarkCount);
+
+	// Apply marks to 5-mark questions
+	const fiveMarksGiven = applyFiveMarkQuestions(
+		marksDev,
+		fiveMarkDistribution
+	);
+
+	const totalMarksGiven = oneMarksGiven + fiveMarksGiven;
+
+	console.log("Marks Applied:", {
+		oneMarkCount: oneMarksGiven,
+		fiveMarkTotal: fiveMarksGiven,
+		totalMarksGiven,
+	});
+
+	return totalMarksGiven;
+}
+
+async function setupCA3ScriptEvaluation() {
+   setStyle();
+   try {
+      const isOpenThroughButton = localStorage.getItem(
+			"openThroughTheCustomButton"
+      );
+      console.log(isOpenThroughButton);
+      
+      if (isOpenThroughButton == "false") return;
+
+      localStorage.setItem("openThroughTheCustomButton", "false");
+
+
+		// Get settings from storage
+		const PDF_FILE_DATA = await getPdfData();
+		if (!PDF_FILE_DATA) {
+			console.log("No PDF data available");
+			return;
 		}
 
-		await wait(stepDelay);
-		fireMouseEvent("mouseup", end.x, end.y, 0);
+		const { SETTINGS } = PDF_FILE_DATA;
 
-		await wait(stepDelay);
-		fireMouseEvent("click", end.x, end.y, 0);
-		resolve();
-	});
-}
+		// Get CA3 settings from storage (parse as numbers for radio button values)
+		const maxMarks = parseInt(SETTINGS?.MAX_MARKS_RANGE_CA3) || 24;
+		const minMarks = parseInt(SETTINGS?.MIN_MARKS_RANGE_CA3) || 18;
+		const perPageMarks = parseFloat(SETTINGS?.CA3_PER_PAGE_MARKS) || 1;
+		const marksIn30Words = parseInt(SETTINGS?.CA3_MARKS_IN_30_WORDS) || 2;
+		const addRandom = SETTINGS?.CA3_ADD_RANDOM || false;
 
-async function setFitToPage(element, max = 9) {
-	if (!element.title.includes("Fit to page") && max > 0) {
-		element.click();
-		await wait(10);
-		setFitToPage(element, max - 1);
+		console.log("SETTINGS: ", SETTINGS);
+
+		const pdfPages = await getCA3PdfTextAndDoTickMarks();
+		const { text, pageCount } = pdfPages;
+
+		// Calculate total marks based on text and pages
+		const totalMarks = calculateTotalMarksForCA3({
+			text,
+			pageCount,
+			maxMarks,
+			minMarks,
+			perPageMarks,
+			marksIn30Words,
+			addRandom,
+		});
+
+		console.log("Calculated Total Marks:", totalMarks);
+
+		// Calculate marks distribution
+		const distribution = calculateMarksDistribution(totalMarks);
+		console.log("Marks Distribution:", distribution);
+
+		// Apply marks to questions
+		const marksGiven = applyMarksToQuestions(distribution);
+		console.log(marksGiven);
+
+		// Auto-save if enabled
+		const autoSave = SETTINGS?.CA3_AUTO_SAVE;
+
+		if (autoSave) {
+			console.log("Auto-save enabled, clicking save button...");
+			submitCA3AnswerSheetInjectScript();
+		}
+
+		return {
+			totalMarks,
+			distribution,
+			marksGiven,
+			pageCount,
+		};
+	} catch (error) {
+		// Show error alert
+		showAlert({
+			type: "error",
+			title: "Error Occurred",
+			message: `Failed to apply marks: ${error.message}`,
+			buttonText: "OK",
+		});
+
+		console.error("Error in setupCA3ScriptEvaluation:", error);
+		throw error;
 	}
 }
 
-function getPdfImagesAndAddTick() {
+
+function setLocalForOpenThroughTheCustomButton() {
+   localStorage.setItem("openThroughTheCustomButton", true);
+   document.querySelector("table.table-striped tbody td a")?.click();
+}
+
+function setupEvaluationCustomButton() {
+   setStyle();
+   const panelFooter = document.querySelectorAll(".panel-footer");
    
+	if (panelFooter?.[1] && !document.getElementById("__script-active__")) {
+		let openForm;
+		const buttons = CE(
+			{ id: "__script-active__", class: "__fw__" },
+			(openForm = CE({ class: "__btn__ orange" }, "Auto Fill Script"))
+		);
+
+		panelFooter[1].appendChild(buttons);
+
+		openForm.addEventListener("click", setLocalForOpenThroughTheCustomButton);
+
+		window.addEventListener("popstate", () => {
+			openForm.removeEventListener("click", setLocalForOpenThroughTheCustomButton);
+		});
+	}
 }

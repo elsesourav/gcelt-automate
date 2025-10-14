@@ -1,98 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link
-         href="./../assets/icons/css/font.css"
-         rel="stylesheet"
-         type="text/css"
-      />
-      <link
-         href="./../assets/icons/css/icon.css"
-         rel="stylesheet"
-         type="text/css"
-      />
-      <link href="./css/base.css" rel="stylesheet" type="text/css" />
-      <link href="./css/main.css" rel="stylesheet" type="text/css" />
-      <link href="./css/checkboxs.css" rel="stylesheet" type="text/css" />
-      <link href="./css/grid.css" rel="stylesheet" type="text/css" />
-      <link href="./css/header.css" rel="stylesheet" type="text/css" />
-      <link href="./css/footer.css" rel="stylesheet" type="text/css" />
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="./../assets/icons/css/font.css"
+			rel="stylesheet"
+			type="text/css"
+		/>
+		<link
+			href="./../assets/icons/css/icon.css"
+			rel="stylesheet"
+			type="text/css"
+		/>
+		<link href="./css/base.css" rel="stylesheet" type="text/css" />
+		<link href="./css/main.css" rel="stylesheet" type="text/css" />
+		<link href="./css/checkboxs.css" rel="stylesheet" type="text/css" />
+		<link href="./css/grid.css" rel="stylesheet" type="text/css" />
+		<link href="./css/header.css" rel="stylesheet" type="text/css" />
+		<link href="./css/footer.css" rel="stylesheet" type="text/css" />
 
-      <script defer src="./../querySelector.js"></script>
-      <script defer src="./js/pdf.worker.js"></script>
-      <script defer src="./js/pdf.min.js"></script>
-      <script defer src="./../utils.js"></script>
-      <script defer src="./js/alert.js"></script>
-      <script defer src="./js/popup.fun.js"></script>
-      <script defer src="./js/popup.js"></script>
-   </head>
+		<script defer src="./../querySelector.js"></script>
+		<script defer src="./js/pdf.worker.js"></script>
+		<script defer src="./js/pdf.min.js"></script>
+		<script defer src="./../utils.js"></script>
+		<script defer src="./js/alert.js"></script>
+		<script defer src="./js/popup.fun.js"></script>
+		<script defer src="./js/popup.js"></script>
+	</head>
 
-   <body>
-      <div class="cover">
-         <header>
-            <div class="wrap">
-               <div class="logo">
-                  <img src="./../assets/icons/icon.png" alt="extension icon" />
-               </div>
-               <section>
-                  <p>GCELT AUTOMATE</p>
-                  <b>
-                     <span class="a">Simplify</span>
-                     <span class="c">faculty workflow</span>
-                     <span class="b">instantly</span>
-                  </b>
-               </section>
-            </div>
-         </header>
+	<body>
+		<div class="cover">
+			<header>
+				<div class="wrap">
+					<div class="logo">
+						<img src="./../assets/icons/icon.png" alt="extension icon" />
+					</div>
+					<section>
+						<p>GCELT AUTOMATE</p>
+						<b>
+							<span class="a">Simplify</span>
+							<span class="c">faculty workflow</span>
+							<span class="b">instantly</span>
+						</b>
+					</section>
+				</div>
+			</header>
 
-         <nav class="tab-navigation">
-            <div class="nav-container">
-               <button class="nav-tab active" data-tab="pdf-files">
-                  <i class="sbi-file-pdf"></i>
-                  <span>Manage PDF Files</span>
-               </button>
-               <button class="nav-tab" data-tab="ca1-ca2">
-                  <i class="sbi-sticky-note"></i>
-                  <span>CA1 & CA2 Settings</span>
-               </button>
-               <button class="nav-tab" data-tab="ca3">
-                  <i class="sbi-edit"></i>
-                  <span>CA3 Settings</span>
-               </button>
-            </div>
-         </nav>
+			<nav class="tab-navigation">
+				<div class="nav-container">
+					<button class="nav-tab active" data-tab="pdf-files">
+						<i class="sbi-file-pdf"></i>
+						<span>Manage PDF Files</span>
+					</button>
+					<button class="nav-tab" data-tab="ca1-ca2">
+						<i class="sbi-sticky-note"></i>
+						<span>CA1 & CA2 Settings</span>
+					</button>
+					<button class="nav-tab" data-tab="ca3">
+						<i class="sbi-edit"></i>
+						<span>CA3 Settings</span>
+					</button>
+				</div>
+			</nav>
 
-         <main>
-            <!-- PDF Files Content -->
-            <div class="tab-content active" id="pdf-files-content">
-               <div class="basic-grid no-flip file-grid">
-                  <div class="gap x2"></div>
+			<main>
+				<!-- PDF Files Content -->
+				<div class="tab-content active" id="pdf-files-content">
+					<div class="basic-grid no-flip file-grid">
+						<div class="gap x2"></div>
 
-                  <div class="take-inp files">
-                     <!-- Search Section -->
-                     <div class="pdf-search-wrapper">
-                        <div class="search-input-container">
-                           <i class="sbi-search search-icon"></i>
-                           <input
-                              type="text"
-                              id="pdfSearchInput"
-                              placeholder="Search PDF files..."
-                              autocomplete="off"
-                           />
-                           <button
-                              class="clear-search"
-                              id="clearSearchBtn"
-                              title="Clear search"
-                           >
-                              <i class="sbi-close"></i>
-                           </button>
-                        </div>
-                     </div>
+						<div class="take-inp files">
+							<!-- Search Section -->
+							<div class="pdf-search-wrapper">
+								<div class="search-input-container">
+									<i class="sbi-search search-icon"></i>
+									<input
+										type="text"
+										id="pdfSearchInput"
+										placeholder="Search PDF files..."
+										autocomplete="off"
+									/>
+									<button
+										class="clear-search"
+										id="clearSearchBtn"
+										title="Clear search"
+									>
+										<i class="sbi-close"></i>
+									</button>
+								</div>
+							</div>
 
-                     <section class="all-files" id="allFileElementList">
-                        <!-- <div class="file">
+							<section class="all-files" id="allFileElementList">
+								<!-- <div class="file">
                            <div class="file-no">
                               <span>1</span>
                            </div>
@@ -100,187 +100,426 @@
                               <span>File Name</span>
                            </div>
                         </div> -->
-                     </section>
+							</section>
 
-                     <div class="buttons">
-                        <input
-                           type="file"
-                           id="pdfFileInput"
-                           multiple
-                           accept=".pdf"
-                           class="input-file"
-                        />
-                        <button class="btn delete-all" id="pdfDeleteButton">
-                           <span>DELETE ALL PDF</span>
-                           <i class="sbi-delete-sweep"></i>
-                        </button>
-                        <button class="btn upload" id="pdfUploadButton">
-                           <span>UPLOAD PDFS</span>
-                           <i class="sbi-upload4"></i>
-                        </button>
-                     </div>
-                  </div>
+							<div class="buttons">
+								<input
+									type="file"
+									id="pdfFileInput"
+									multiple
+									accept=".pdf"
+									class="input-file"
+								/>
+								<button class="btn delete-all" id="pdfDeleteButton">
+									<span>DELETE ALL PDF</span>
+									<i class="sbi-delete-sweep"></i>
+								</button>
+								<button class="btn upload" id="pdfUploadButton">
+									<span>UPLOAD PDFS</span>
+									<i class="sbi-upload4"></i>
+								</button>
+							</div>
+						</div>
 
-                  <div class="take-inp check-box full-width">
-                     <span class="inp-span">Overwrite Existing PDF File</span>
-                     <section>
-                        <input
-                           autocomplete="off"
-                           type="checkbox"
-                           name="OVERWRITE_PDF_FILES"
-                           class="input-setting toggle"
-                        />
-                     </section>
-                  </div>
-               </div>
-            </div>
+						<div class="take-inp check-box full-width">
+							<span class="inp-span">Overwrite Existing PDF File</span>
+							<section>
+								<input
+									autocomplete="off"
+									type="checkbox"
+									name="OVERWRITE_PDF_FILES"
+									class="input-setting toggle"
+								/>
+							</section>
+						</div>
+					</div>
+				</div>
 
-            <!-- CA1 & CA2 Content -->
-            <div class="tab-content" id="ca1-ca2-content">
-               <div class="basic-grid no-flip">
-                  <div class="gap x2"></div>
-                  <div class="take-inp full-width range-slider-container">
-                     <label>Select Page Range</label>
-                     <div class="dual-range-slider">
-                        <input
-                           type="range"
-                           id="minPageRange"
-                           name="MIN_PAGE_RANGE_CA1_AND_CA2"
-                           class="input-setting"
-                           min="1"
-                           max="25"
-                           value="20"
-                        />
-                        <input
-                           type="range"
-                           id="maxPageRange"
-                           name="MAX_PAGE_RANGE_CA1_AND_CA2"
-                           class="input-setting"
-                           min="1"
-                           max="25"
-                           value="25"
-                        />
-                        <div class="slider-track"></div>
-                        <div class="slider-progress"></div>
-                     </div>
-                     <div class="range-values">
-                        <span>1 - 25</span>
-                     </div>
-                  </div>
+				<!-- CA1 & CA2 Content -->
+				<div class="tab-content" id="ca1-ca2-content">
+					<div class="basic-grid no-flip">
+						<div class="gap x2"></div>
+						<div class="take-inp full-width range-slider-container">
+							<label>Select Page Range</label>
+							<div class="dual-range-slider">
+								<input
+									type="range"
+									id="minPageRange"
+									name="MIN_PAGE_RANGE_CA1_AND_CA2"
+									class="input-setting"
+									min="1"
+									max="25"
+									value="20"
+								/>
+								<input
+									type="range"
+									id="maxPageRange"
+									name="MAX_PAGE_RANGE_CA1_AND_CA2"
+									class="input-setting"
+									min="1"
+									max="25"
+									value="25"
+								/>
+								<div class="slider-track"></div>
+								<div class="slider-progress"></div>
+							</div>
+							<div class="range-values">
+								<span>1 - 25</span>
+							</div>
+						</div>
 
-                  <div class="take-inp check-box full-width">
-                     <span class="inp-span">Overwrite Given Marks</span>
-                     <section>
-                        <input
-                           autocomplete="off"
-                           type="checkbox"
-                           name="OVERWRITE_CA1_AND_CA2_MARKS"
-                           class="input-setting toggle"
-                        />
-                     </section>
-                  </div>
-               </div>
-            </div>
+						<div class="take-inp check-box full-width">
+							<span class="inp-span">Overwrite Given Marks</span>
+							<section>
+								<input
+									autocomplete="off"
+									type="checkbox"
+									name="OVERWRITE_CA1_AND_CA2_MARKS"
+									class="input-setting toggle"
+								/>
+							</section>
+						</div>
+					</div>
+				</div>
 
-            <!-- CA3 Content -->
-            <div class="tab-content" id="ca3-content">
-               <div class="basic-grid no-flip">
-                  <div class="gap x2"></div>
+				<!-- CA3 Content -->
+				<div class="tab-content" id="ca3-content">
+					<div class="basic-grid no-flip">
+						<div class="gap x2"></div>
 
-                  <div class="coming-soon-container">
-                     <div class="coming-soon-content">
-                        <i class="sbi-time"></i>
-                        <h2>Coming Soon</h2>
-                        <div class="feature-preview">
-                           <div class="feature-item">
-                              <i class="sbi-check-circle"></i>
-                              <span>Upload Files</span>
-                           </div>
-                           <div class="feature-item">
-                              <i class="sbi-check-circle"></i>
-                              <span>Review Answers Sheet</span>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
+						<!-- Auto Save Toggle -->
+						<div class="take-inp check-box full-width">
+							<span class="inp-span">Auto Save CA3 Settings</span>
+							<section>
+								<input
+									autocomplete="off"
+									type="checkbox"
+									name="CA3_AUTO_SAVE"
+									class="input-setting toggle"
+									checked
+								/>
+							</section>
+						</div>
 
-                  <div class="gap x10"></div>
-               </div>
-            </div>
-         </main>
+						<!-- Marks Range Slider -->
+						<div class="take-inp range-slider-container">
+							<label>Select Marks Range</label>
+							<div class="dual-range-slider">
+								<input
+									type="range"
+									id="minMarksRangeCA3"
+									name="MIN_MARKS_RANGE_CA3"
+									class="input-setting"
+									min="1"
+									max="25"
+									value="18"
+								/>
+								<input
+									type="range"
+									id="maxMarksRangeCA3"
+									name="MAX_MARKS_RANGE_CA3"
+									class="input-setting"
+									min="1"
+									max="25"
+									value="23"
+								/>
+								<div class="slider-track"></div>
+								<div class="slider-progress"></div>
+							</div>
+							<div class="range-values">
+								<span>18 - 25</span>
+							</div>
+						</div>
 
-         <footer>
-            <div class="help-section">
-               <h3 class="developer-info">Developer Contact - Sourav Barui</h3>
-               <div class="contact-info">
-                  <div class="contact-item">
-                     <i class="sbi-mail"></i>
-                     <a href="mailto:elsesourav@gmail.com"
-                        >elsesourav@gmail.com</a
-                     >
-                  </div>
-                  <div class="contact-item">
-                     <i class="sbi-phone"></i>
-                     <a href="tel:+918250032643">+91 8250032643</a>
-                  </div>
-                  <div class="contact-item">
-                     <i class="sbi-github"></i>
-                     <a
-                        href="https://github.com/elsesourav/gcelt-automate"
-                        target="_blank"
-                        >GitHub Repository</a
-                     >
-                  </div>
-               </div>
-            </div>
-         </footer>
-      </div>
+						<!-- Per Page Marks -->
+						<div class="take-inp full-width ca3-radio-group">
+							<label>Marks Per Page</label>
+							<div class="radio-options">
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="0"
+									/>
+									<span>0</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="0.5"
+									/>
+									<span>0.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="1"
+                              checked
+									/>
+									<span>1</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="1.5"
+									/>
+									<span>1.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="2"
+									/>
+									<span>2</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="2.5"
+									/>
+									<span>2.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="3"
+									/>
+									<span>3</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="3.5"
+									/>
+									<span>3.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="4"
+									/>
+									<span>4</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_PER_PAGE_MARKS"
+										class="input-setting"
+										value="5"
+									/>
+									<span>5</span>
+								</div>
+							</div>
+						</div>
 
-      <!-- PDF Preview Modal -->
-      <div class="pdf-preview-modal" id="pdfPreviewModal" style="display: none">
-         <div class="modal-overlay" id="modalOverlay"></div>
-         <div class="modal-content">
-            <div class="modal-header">
-               <h3 class="modal-title" id="modalTitle">PDF Preview</h3>
-               <button
-                  class="modal-close"
-                  id="modalClose"
-                  title="Close preview"
-               >
-                  <i class="sbi-close"></i>
-               </button>
-            </div>
-            <div class="modal-body">
-               <div
-                  id="pdfCanvasContainer"
-                  style="
-                     display: flex;
-                     justify-content: center;
-                     align-items: flex-start;
-                     height: 100%;
-                     background: #f5f5f5;
-                     overflow: auto;
-                     max-height: 80vh;
-                  "
-               >
-                  <canvas
-                     id="pdfPreviewCanvas"
-                     style="
-                        max-width: 100%;
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                     "
-                  ></canvas>
-               </div>
-               <iframe
-                  id="pdfPreviewFrame"
-                  src=""
-                  width="100%"
-                  height="100%"
-                  frameborder="0"
-                  style="display: none"
-               ></iframe>
-            </div>
-         </div>
-      </div>
-   </body>
+						<!-- Marks In 30 Words -->
+						<div class="take-inp full-width ca3-radio-group">
+							<label>Marks Per 30 Words</label>
+							<div class="radio-options">
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="0"
+									/>
+									<span>0</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="0.5"
+									/>
+									<span>0.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="1"
+									/>
+									<span>1</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="1.5"
+                              checked
+									/>
+									<span>1.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="2"
+									/>
+									<span>2</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="2.5"
+									/>
+									<span>2.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="3"
+										
+									/>
+									<span>3</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="3.5"
+									/>
+									<span>3.5</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="4"
+									/>
+									<span>4</span>
+								</div>
+								<div class="radio-option">
+									<input
+										type="radio"
+										name="CA3_MARKS_IN_30_WORDS"
+										class="input-setting"
+										value="5"
+									/>
+									<span>5</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Add Random Toggle -->
+						<div class="take-inp check-box full-width">
+							<span class="inp-span"
+								>Add Random Variation (±2 mark)</span
+							>
+							<section>
+								<input
+									autocomplete="off"
+									type="checkbox"
+									name="CA3_ADD_RANDOM"
+									class="input-setting toggle"
+								/>
+							</section>
+						</div>
+
+						<div class="gap x2"></div>
+					</div>
+				</div>
+			</main>
+
+			<footer>
+				<div class="help-section">
+					<h3 class="developer-info">Developer Contact - Sourav Barui</h3>
+					<div class="contact-info">
+						<div class="contact-item">
+							<i class="sbi-mail"></i>
+							<a href="mailto:elsesourav@gmail.com"
+								>elsesourav@gmail.com</a
+							>
+						</div>
+						<div class="contact-item">
+							<i class="sbi-phone"></i>
+							<a href="tel:+918250032643">+91 8250032643</a>
+						</div>
+						<div class="contact-item">
+							<i class="sbi-github"></i>
+							<a
+								href="https://github.com/elsesourav/gcelt-automate"
+								target="_blank"
+								>GitHub Repository</a
+							>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+
+		<!-- PDF Preview Modal -->
+		<div class="pdf-preview-modal" id="pdfPreviewModal" style="display: none">
+			<div class="modal-overlay" id="modalOverlay"></div>
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title" id="modalTitle">PDF Preview</h3>
+					<button
+						class="modal-close"
+						id="modalClose"
+						title="Close preview"
+					>
+						<i class="sbi-close"></i>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div
+						id="pdfCanvasContainer"
+						style="
+							display: flex;
+							justify-content: center;
+							align-items: flex-start;
+							height: 100%;
+							background: #f5f5f5;
+							overflow: auto;
+							max-height: 80vh;
+						"
+					>
+						<canvas
+							id="pdfPreviewCanvas"
+							style="
+								max-width: 100%;
+								box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+							"
+						></canvas>
+					</div>
+					<iframe
+						id="pdfPreviewFrame"
+						src=""
+						width="100%"
+						height="100%"
+						frameborder="0"
+						style="display: none"
+					></iframe>
+				</div>
+			</div>
+		</div>
+	</body>
 </html>

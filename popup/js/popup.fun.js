@@ -529,6 +529,9 @@ function initializeTabNavigation() {
 			setTimeout(() => {
 				targetContent.classList.add("active");
 			}, 50);
+
+			// Save the last active tab
+			chrome.storage.local.set({ LAST_ACTIVE_TAB: targetTab });
 		}
 	}
 
@@ -539,6 +542,12 @@ function initializeTabNavigation() {
 			const tabTarget = tab.getAttribute("data-tab");
 			switchTab(tabTarget);
 		});
+	});
+
+	// Restore last active tab on load
+	chrome.storage.local.get(["LAST_ACTIVE_TAB"], (result) => {
+		const lastTab = result.LAST_ACTIVE_TAB || "pdf-files"; // Default to pdf-files
+		switchTab(lastTab);
 	});
 
 	// Make tabs focusable

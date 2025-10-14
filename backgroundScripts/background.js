@@ -1,8 +1,7 @@
 importScripts("./../utils.js", "./bgUtils.js");
 
-// Handle post-upload script injection
 runtimeOnMessage(
-	"C_B_INJECT_READ_PDF_AND_PUT_MARKS",
+	"C_B_INJECT_READ_PDF_TEXT",
 	async (_, sender, sendResponse) => {
 		try {
 			const tabId = sender.tab.id;
@@ -99,26 +98,47 @@ runtimeOnMessage(
 
 					// Collect all page images into one canvas
 					for (let i = 0; i < pdfSize; i++) {
-						await wait(500);
+						await wait(600);
 
 						// Draw current page onto combined canvas
 						const yOffset = i * (pageHeight + spacing);
 						ctx.drawImage(canvas, 0, yOffset, pageWidth, pageHeight);
 
 						await simulateStraightDrag(canvas);
-						await wait(300);
+						await wait(400);
 						nextPageBtn.click();
-						await wait(300);
+						await wait(400);
 					}
 
-					// Convert to grayscale (black and white) for smaller size
-					const imageData = ctx.getImageData(
+					// Create a smaller canvas (reduce resolution by 40%)
+					const scale = 0.4; // Reduce to 40% size
+					const smallCanvas = document.createElement("canvas");
+					smallCanvas.width = Math.floor(tempCanvas.width * scale);
+					smallCanvas.height = Math.floor(tempCanvas.height * scale);
+					const smallCtx = smallCanvas.getContext("2d", {
+						willReadFrequently: true,
+					});
+
+					// Draw scaled down image
+					smallCtx.drawImage(
+						tempCanvas,
 						0,
 						0,
-						tempCanvas.width,
-						tempCanvas.height
+						smallCanvas.width,
+						smallCanvas.height
+					);
+
+					// Get image data for threshold processing
+					const imageData = smallCtx.getImageData(
+						0,
+						0,
+						smallCanvas.width,
+						smallCanvas.height
 					);
 					const data = imageData.data;
+
+					// Apply threshold to keep only dark handwriting (binary B&W)
+					const threshold = 180; // Adjust: lower = more aggressive (darker text only)
 
 					for (let i = 0; i < data.length; i += 4) {
 						// Convert RGB to grayscale using luminance formula
@@ -126,50 +146,73 @@ runtimeOnMessage(
 							data[i] * 0.299 +
 							data[i + 1] * 0.587 +
 							data[i + 2] * 0.114;
-						data[i] = gray; // Red
-						data[i + 1] = gray; // Green
-						data[i + 2] = gray; // Blue
+
+						// Apply threshold: pure black or pure white only
+						const bw = gray < threshold ? 0 : 255;
+
+						data[i] = bw; // Red
+						data[i + 1] = bw; // Green
+						data[i + 2] = bw; // Blue
 						// data[i + 3] is alpha, keep unchanged
 					}
 
-					ctx.putImageData(imageData, 0, 0);
+					smallCtx.putImageData(imageData, 0, 0);
 
-					// Convert to PNG (grayscale = much smaller than color PNG)
-					const combinedImageData = tempCanvas.toDataURL("image/png");
+					// Convert to PNG (binary B&W with reduced resolution)
+					const combinedImageData = smallCanvas.toDataURL("image/png");
 
 					console.log("Combined image created:", {
-						width: tempCanvas.width,
-						height: tempCanvas.height,
+						originalSize: `${tempCanvas.width}x${tempCanvas.height}`,
+						optimizedSize: `${smallCanvas.width}x${smallCanvas.height}`,
+						scale: `${scale * 100}%`,
 						totalPages: pdfSize,
 						dataSize: `${(combinedImageData.length / 1024 / 1024).toFixed(
 							2
 						)} MB`,
-						format: "PNG Grayscale (B&W)",
+						format: "PNG Binary B&W (Threshold)",
+						threshold: threshold,
 					});
+               
 
 					return {
 						combinedImage: combinedImageData,
 						totalPages: pdfSize,
 						pageWidth: pageWidth,
 						pageHeight: pageHeight,
-						combinedWidth: tempCanvas.width,
-						combinedHeight: tempCanvas.height,
+						combinedWidth: smallCanvas.width,
+						combinedHeight: smallCanvas.height,
 					};
 				})();
 			});
 
 			console.log("Injection result:", result);
 
+
 			if (!result || !result[0]?.result) {
 				throw new Error("Script execution failed");
 			}
 
-			const answerImage = result[0].result;
-         
-         const ocrResult = await PROCESS_PDF_IMAGES_OCR(answerImage);
-         console.log("OCR Result:", ocrResult);
+			const { combinedImage } = result[0].result;
 
-			sendResponse({ success: true, data: answerImage });
+			// Start OCR timing
+			const ocrStartTime = performance.now();
+         console.log("Starting OCR processing...");
+         
+         tabSendMessage(tabId, "B_C_START_BIG_LOADING", {});
+			const ocrResult = await PROCESS_PDF_IMAGES_OCR(combinedImage);
+         tabSendMessage(tabId, "B_C_STOP_BIG_LOADING", {});
+
+			// Calculate OCR duration
+			const ocrEndTime = performance.now();
+			const ocrDuration = ((ocrEndTime - ocrStartTime) / 1000).toFixed(2);
+			console.log(`OCR completed in ${ocrDuration} seconds`);
+			console.log("OCR Result:", ocrResult);
+
+         sendResponse({
+            success: true,
+            text: ocrResult?.result?.text || "",
+            pageCount: ocrResult?.result?.pageCount || 0,
+         });
 		} catch (error) {
 			console.log("Script injection failed:", error);
 			sendResponse({ success: false, error: error.message });
@@ -237,6 +280,53 @@ runtimeOnMessage(
 						aTag.click();
 					}
 				}
+				return true;
+			});
+
+			if (!result || !result[0]?.result) {
+				throw new Error("Script execution failed");
+			}
+			sendResponse({ success: true });
+		} catch (error) {
+			console.log("Script injection failed:", error);
+			sendResponse({ success: false, error: error.message });
+		}
+	}
+);
+
+runtimeOnMessage(
+	"C_B_INJECT_CA3_ANSWER_SHEET_SUBMISSION",
+	async (_, sender, sendResponse) => {
+		try {
+			const tabId = sender.tab.id;
+
+         const result = await injectScriptInContentPage(tabId, () => {
+            function setClickLikeHuman(element) {
+					const event = new Event("change", { bubbles: true });
+					element?.click();
+					element?.dispatchEvent(event);
+				}
+            
+				setTimeout(() => {
+					const saveButton = document.querySelector("a.btn.btn-success");
+					if (saveButton) {
+						setClickLikeHuman(saveButton);
+
+						setTimeout(() => {
+							// Also click the confirm button in the modal if it appears
+							const confirmButton = document.querySelector(
+								`button[data-bb-handler="confirm"]`
+							);
+							if (confirmButton) {
+								setClickLikeHuman(confirmButton);
+							}
+						}, 2000);
+						console.log("Save button clicked successfully");
+					} else {
+						console.warn("Save button not found");
+					}
+            }, 1000);
+            
 				return true;
 			});
 
