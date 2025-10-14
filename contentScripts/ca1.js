@@ -221,7 +221,7 @@ async function readyPurMarksForCA1() {
 	const { SETTINGS } = PDF_FILE_DATA;
 	const OVERWRITE_CA1_AND_CA2_MARKS =
 		SETTINGS?.OVERWRITE_CA1_AND_CA2_MARKS || false;
-	const minimumMarks = SETTINGS?.MIN_PAGE_RANGE_CA1_AND_CA2 || 0;
+	const minimumMarks = SETTINGS?.MIN_MARKS_RANGE_CA1_AND_CA2 || 0;
 	const maximumMarks = SETTINGS?.MAX_PAGE_RANGE_CA1_AND_CA2 || 0;
 
 	if (minimumMarks === 0 && maximumMarks === 0) {

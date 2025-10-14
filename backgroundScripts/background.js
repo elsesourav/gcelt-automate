@@ -58,11 +58,11 @@ runtimeOnMessage(
 						fire("mousedown", start.x, start.y);
 						await wait(10);
 						fire("mousemove", end.x + 5, end.y + 5);
-						await wait(10);
+						await wait(20);
 						fire("mousemove", end.x - 5, end.y - 5);
-						await wait(10);
+						await wait(20);
 						fire("mousemove", end.x, end.y);
-						await wait(10);
+						await wait(20);
 						fire("mouseup", end.x, end.y, 0);
 						await wait(10);
 						fire("click", end.x, end.y, 0);
@@ -102,16 +102,16 @@ runtimeOnMessage(
 
 					// Collect all page images into one canvas
 					for (let i = 0; i < pdfSize; i++) {
-						await wait(500);
+						await wait(600);
 
 						// Draw current page onto combined canvas
 						const yOffset = i * (pageHeight + spacing);
 						ctx.drawImage(canvas, 0, yOffset, pageWidth, pageHeight);
 
 						await simulateStraightDrag(canvas);
-						await wait(400);
+						await wait(600);
 						nextPageBtn.click();
-						await wait(400);
+						await wait(600);
 					}
 
 					// Create a smaller canvas (reduce resolution by 20%)
