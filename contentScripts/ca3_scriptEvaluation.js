@@ -20,11 +20,15 @@ function calculateTotalMarksForCA3({
 	totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
 
 	if (addRandom) {
-		if (totalMarks === maxMarks) totalMarks -= 2;
+      if (perPageMarks === 0 && marksIn30Words === 0) {
+         totalMarks = Math.floor(Math.random() * (maxMarks - minMarks + 1)) + minMarks;
+		} else {
+			if (totalMarks === maxMarks) totalMarks -= 2;
 
-		const randomVariation = Math.floor(Math.random() * 5) - 2; // Random: -2 to +2
-		totalMarks = totalMarks + randomVariation;
-		totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
+			const randomVariation = Math.floor(Math.random() * 5) - 2; // Random: -2 to +2
+			totalMarks = totalMarks + randomVariation;
+			totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
+		}
 	}
 
 	return totalMarks;
@@ -280,7 +284,7 @@ async function setupCA3ScriptEvaluation() {
 		const autoSave = SETTINGS?.CA3_AUTO_SAVE;
 		const waitTime = parseInt(SETTINGS?.CA3_WAIT_TIME) || 30;
 
-		await wait(2000); 
+		await wait(2000);
 
 		if (autoSave) {
 			const waitTimeMs = waitTime * 1000; // Convert to milliseconds
