@@ -110,8 +110,8 @@ runtimeOnMessage(
 						await wait(400);
 					}
 
-					// Create a smaller canvas (reduce resolution by 40%)
-					const scale = 0.4; // Reduce to 40% size
+					// Create a smaller canvas (reduce resolution by 20%)
+					const scale = 0.8; // Reduce to 80% size
 					const smallCanvas = document.createElement("canvas");
 					smallCanvas.width = Math.floor(tempCanvas.width * scale);
 					smallCanvas.height = Math.floor(tempCanvas.height * scale);
@@ -308,7 +308,7 @@ runtimeOnMessage(
 				}
             
 				setTimeout(() => {
-					const saveButton = document.querySelector("a.btn.btn-success");
+					const saveButton = document.querySelector("a.btn.btn-danger");
 					if (saveButton) {
 						setClickLikeHuman(saveButton);
 
@@ -320,7 +320,7 @@ runtimeOnMessage(
 							if (confirmButton) {
 								setClickLikeHuman(confirmButton);
 							}
-						}, 2000);
+						}, 3000);
 						console.log("Save button clicked successfully");
 					} else {
 						console.warn("Save button not found");
