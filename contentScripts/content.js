@@ -55,7 +55,7 @@ function showAlert(options) {
 		info: "ℹ",
 	};
 
-	let okBtn;
+	let okBtn, messageEl;
 
 	const alertDialog = CE(
 		{ class: "__alert__" },
@@ -63,7 +63,7 @@ function showAlert(options) {
 			{ class: "__dialog__" },
 			CE({ class: `__icon__ ${type}` }, icons[type]),
 			CE({ class: "__title__" }, title),
-			CE({ class: "__message__" }, message),
+			(messageEl = CE({ class: "__message__" }, message)),
 			CE(
 				{ class: "__actions__" },
 				(okBtn = CE({ class: "__btn__ blue" }, buttonText))
@@ -73,22 +73,51 @@ function showAlert(options) {
 
 	// Event handlers
 	okBtn.onclick = () => {
-		document.body.removeChild(alertDialog);
+		if (document.body.contains(alertDialog)) {
+			document.body.removeChild(alertDialog);
+		}
 		onClose();
 	};
 
 	// Close on backdrop click
 	alertDialog.onclick = (e) => {
 		if (e.target === alertDialog) {
+			if (document.body.contains(alertDialog)) {
+				document.body.removeChild(alertDialog);
+			}
+			onClose();
+		}
+	};
+
+	// close function
+	alertDialog.close = () => {
+		if (document.body.contains(alertDialog)) {
 			document.body.removeChild(alertDialog);
 			onClose();
+		}
+	};
+
+	// update message function
+	alertDialog.updateMessage = (newMessage) => {
+		if (messageEl) {
+			messageEl.textContent = newMessage;
+		}
+	};
+
+	// update title function
+	alertDialog.updateTitle = (newTitle) => {
+		const titleEl = alertDialog.querySelector(".__title__");
+		if (titleEl) {
+			titleEl.textContent = newTitle;
 		}
 	};
 
 	// Close on Escape key
 	const handleEscape = (e) => {
 		if (e.key === "Escape") {
-			document.body.removeChild(alertDialog);
+			if (document.body.contains(alertDialog)) {
+				document.body.removeChild(alertDialog);
+			}
 			document.removeEventListener("keydown", handleEscape);
 			onClose();
 		}
@@ -292,7 +321,8 @@ function setupActionButtons() {
 		isFwPdf &&
 		(itIsUploadPageForCA3() ||
 			itIsUploadPageForCA1() ||
-			itIsUploadPageForCA2() || itIsCA3EvaluationForm())
+			itIsUploadPageForCA2() ||
+			itIsCA3EvaluationForm())
 	) {
 		fwPdf.style.display = "flex";
 	} else if (
@@ -300,7 +330,8 @@ function setupActionButtons() {
 		!(
 			itIsUploadPageForCA3() ||
 			itIsUploadPageForCA1() ||
-			itIsUploadPageForCA2() || itIsCA3EvaluationForm()
+			itIsUploadPageForCA2() ||
+			itIsCA3EvaluationForm()
 		)
 	) {
 		fwPdf.style.display = "none";

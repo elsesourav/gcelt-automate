@@ -118,6 +118,14 @@ function submitCA3AnswerSheetInjectScript() {
 		});
 	});
 }
+function submitCA3OpenSheetInjectScript() {
+	return new Promise(async (resolve) => {
+		runtimeSendMessage("C_B_INJECT_CA3_OPEN_ANSWER_SHEET", (r) => {
+			resolve(r);
+			// console.log("Post-upload script injection successful");
+		});
+	});
+}
 
 function getPdfData() {
   return new Promise(async (resolve) => {

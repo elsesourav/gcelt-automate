@@ -57,6 +57,10 @@ runtimeOnMessage(
 						// Fire events: mousedown -> mousemove -> mouseup -> click
 						fire("mousedown", start.x, start.y);
 						await wait(10);
+						fire("mousemove", end.x + 5, end.y + 5);
+						await wait(10);
+						fire("mousemove", end.x - 5, end.y - 5);
+						await wait(10);
 						fire("mousemove", end.x, end.y);
 						await wait(10);
 						fire("mouseup", end.x, end.y, 0);
@@ -98,7 +102,7 @@ runtimeOnMessage(
 
 					// Collect all page images into one canvas
 					for (let i = 0; i < pdfSize; i++) {
-						await wait(600);
+						await wait(500);
 
 						// Draw current page onto combined canvas
 						const yOffset = i * (pageHeight + spacing);
@@ -320,13 +324,35 @@ runtimeOnMessage(
 							if (confirmButton) {
 								setClickLikeHuman(confirmButton);
 							}
-						}, 3000);
+						}, 5000);
 						console.log("Save button clicked successfully");
 					} else {
 						console.warn("Save button not found");
 					}
             }, 1000);
             
+				return true;
+			});
+
+			if (!result || !result[0]?.result) {
+				throw new Error("Script execution failed");
+			}
+			sendResponse({ success: true });
+		} catch (error) {
+			console.log("Script injection failed:", error);
+			sendResponse({ success: false, error: error.message });
+		}
+	}
+);
+
+runtimeOnMessage(
+	"C_B_INJECT_CA3_OPEN_ANSWER_SHEET",
+	async (_, sender, sendResponse) => {
+		try {
+			const tabId = sender.tab.id;
+
+			const result = await injectScriptInContentPage(tabId, () => {
+				document.querySelector("table.table-striped tbody td a")?.click();
 				return true;
 			});
 

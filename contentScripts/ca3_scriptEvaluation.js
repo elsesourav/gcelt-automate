@@ -20,6 +20,8 @@ function calculateTotalMarksForCA3({
 	totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
 
 	if (addRandom) {
+		if (totalMarks === maxMarks) totalMarks -= 2;
+
 		const randomVariation = Math.floor(Math.random() * 5) - 2; // Random: -2 to +2
 		totalMarks = totalMarks + randomVariation;
 		totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
@@ -221,17 +223,16 @@ function applyMarksToQuestions(distribution) {
 }
 
 async function setupCA3ScriptEvaluation() {
-   setStyle();
-   try {
-      const isOpenThroughButton = localStorage.getItem(
+	setStyle();
+	try {
+		const isOpenThroughButton = localStorage.getItem(
 			"openThroughTheCustomButton"
-      );
-      console.log(isOpenThroughButton);
-      
-      if (isOpenThroughButton == "false") return;
+		);
+		console.log(isOpenThroughButton);
 
-      localStorage.setItem("openThroughTheCustomButton", "false");
+		if (isOpenThroughButton == "false") return;
 
+		localStorage.setItem("openThroughTheCustomButton", "false");
 
 		// Get settings from storage
 		const PDF_FILE_DATA = await getPdfData();
@@ -277,10 +278,53 @@ async function setupCA3ScriptEvaluation() {
 
 		// Auto-save if enabled
 		const autoSave = SETTINGS?.CA3_AUTO_SAVE;
+		const waitTime = parseInt(SETTINGS?.CA3_WAIT_TIME) || 30;
+
+		await wait(2000); 
 
 		if (autoSave) {
-			console.log("Auto-save enabled, clicking save button...");
-			submitCA3AnswerSheetInjectScript();
+			const waitTimeMs = waitTime * 1000; // Convert to milliseconds
+			console.log(
+				`Auto-save enabled, waiting ${waitTime} seconds before submitting...`
+			);
+
+			// Show countdown with live timer
+			let remainingTime = waitTime;
+			const alert = showAlert({
+				type: "info",
+				title: "Auto-Submit Scheduled",
+				message: `Form will be automatically submitted in ${remainingTime} seconds`,
+				buttonText: "Okay",
+			});
+
+			// Update countdown every second
+			const countdownInterval = setInterval(() => {
+				remainingTime--;
+				if (remainingTime > 0) {
+					alert.updateMessage(
+						`Form will be automatically submitted in ${remainingTime} seconds`
+					);
+				} else {
+					clearInterval(countdownInterval);
+				}
+			}, 1000);
+
+			// Add click handler to cancel button
+			const closeButton = alert.querySelector(".__btn__");
+			if (closeButton) {
+				closeButton.addEventListener("click", () => {
+					clearInterval(countdownInterval);
+					console.log("Auto-submit cancelled by user");
+				});
+			}
+
+			setTimeout(async () => {
+				clearInterval(countdownInterval);
+				alert.close();
+				await wait(500);
+				submitCA3AnswerSheetInjectScript();
+				console.log("Form submitted successfully");
+			}, waitTimeMs);
 		}
 
 		return {
@@ -303,16 +347,15 @@ async function setupCA3ScriptEvaluation() {
 	}
 }
 
-
 function setLocalForOpenThroughTheCustomButton() {
-   localStorage.setItem("openThroughTheCustomButton", true);
-   document.querySelector("table.table-striped tbody td a")?.click();
+	localStorage.setItem("openThroughTheCustomButton", true);
+	submitCA3OpenSheetInjectScript();
 }
 
 function setupEvaluationCustomButton() {
-   setStyle();
-   const panelFooter = document.querySelectorAll(".panel-footer");
-   
+	setStyle();
+	const panelFooter = document.querySelectorAll(".panel-footer");
+
 	if (panelFooter?.[1] && !document.getElementById("__script-active__")) {
 		let openForm;
 		const buttons = CE(
@@ -325,7 +368,10 @@ function setupEvaluationCustomButton() {
 		openForm.addEventListener("click", setLocalForOpenThroughTheCustomButton);
 
 		window.addEventListener("popstate", () => {
-			openForm.removeEventListener("click", setLocalForOpenThroughTheCustomButton);
+			openForm.removeEventListener(
+				"click",
+				setLocalForOpenThroughTheCustomButton
+			);
 		});
 	}
 }
