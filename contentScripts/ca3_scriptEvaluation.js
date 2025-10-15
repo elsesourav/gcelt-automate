@@ -20,8 +20,9 @@ function calculateTotalMarksForCA3({
 	totalMarks = Math.max(minMarks, Math.min(maxMarks, totalMarks));
 
 	if (addRandom) {
-      if (perPageMarks === 0 && marksIn30Words === 0) {
-         totalMarks = Math.floor(Math.random() * (maxMarks - minMarks + 1)) + minMarks;
+		if (perPageMarks === 0 && marksIn30Words === 0) {
+			totalMarks =
+				Math.floor(Math.random() * (maxMarks - minMarks + 1)) + minMarks;
 		} else {
 			if (totalMarks === maxMarks) totalMarks -= 2;
 
@@ -37,57 +38,81 @@ function calculateTotalMarksForCA3({
 /**
  * Calculate marks distribution between 1-mark and 5-mark questions using randomization
  * @param {number} totalMarks - Total marks to distribute
- * @param {number} max1MarkQuestions - Maximum 1-mark questions (default: 5)
- * @param {number} max5MarkQuestions - Maximum 5-mark questions (default: 4)
- * @returns {Object} Distribution of marks { oneMarkCount, fiveMarkDistribution, totalDistributed }
+ * @param {Object} marksDev - Grouped marks data with available questions
+ * @returns {Object} Distribution of marks { oneMarkAnswered, fiveMarkDistribution }
  */
-function calculateMarksDistribution(
-	totalMarks,
-	max1MarkQuestions = 5,
-	max5MarkQuestions = 4
-) {
-	// Randomly decide how many 1-mark questions to give (between 0 and max possible)
-	const maxPossible1Marks = Math.min(totalMarks, max1MarkQuestions);
-	const min1Marks = Math.max(0, maxPossible1Marks - 2); // At least maxPossible1Marks - 2
-	const oneMarkCount =
-		Math.floor(Math.random() * (maxPossible1Marks - min1Marks + 1)) +
-		min1Marks;
+function calculateMarksDistribution(totalMarks, marksDev) {
+	const available1MarkQuestions = marksDev["1"]?.elements?.length || 0;
+	const available5MarkQuestions = marksDev["5"]?.elements?.length || 0;
 
-	let remainingMarks = totalMarks - oneMarkCount;
+	// Maximum questions we can answer
+	const max1MarkQuestions = Math.min(5, available1MarkQuestions);
+	const max5MarkQuestions = Math.min(4, available5MarkQuestions);
 
-	// Calculate how many 5-mark slots we need
-	const num5MarkSlots = Math.min(
-		Math.ceil(remainingMarks / 5),
-		max5MarkQuestions
+	let remainingMarks = totalMarks;
+
+	// Randomly decide how many 1-mark questions to answer (0 to max)
+	const num1MarkToAnswer = Math.floor(Math.random() * (max1MarkQuestions + 1));
+
+	// Create array indicating which 1-mark questions to answer
+	const oneMarkAnswered = [];
+	for (let i = 0; i < available1MarkQuestions; i++) {
+		oneMarkAnswered.push(i < num1MarkToAnswer ? 1 : 0);
+	}
+	// Shuffle to randomize which questions get marks
+	shuffleArray(oneMarkAnswered);
+
+	// Subtract 1-mark questions from remaining marks
+	remainingMarks -= num1MarkToAnswer;
+
+	// Randomly decide how many 5-mark questions to answer
+	const num5MarkToAnswer = Math.min(
+		max5MarkQuestions,
+		Math.ceil(remainingMarks / 5)
 	);
 
-	// Distribute remaining marks across 5-mark slots with randomization
+	// Create random marks distribution for 5-mark questions
 	const fiveMarkDistribution = [];
-	if (num5MarkSlots > 0) {
-		const baseMarks = Math.floor(remainingMarks / num5MarkSlots);
-		const extraMarks = remainingMarks % num5MarkSlots;
 
-		// Create base distribution
-		for (let i = 0; i < num5MarkSlots; i++) {
-			fiveMarkDistribution.push(baseMarks + (i < extraMarks ? 1 : 0));
-		}
+	if (num5MarkToAnswer > 0 && remainingMarks > 0) {
+		// Distribute remaining marks across questions
+		let marksToDistribute = remainingMarks;
 
-		// Shuffle the distribution array for randomness
-		for (let i = fiveMarkDistribution.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[fiveMarkDistribution[i], fiveMarkDistribution[j]] = [
-				fiveMarkDistribution[j],
-				fiveMarkDistribution[i],
-			];
+		for (let i = 0; i < num5MarkToAnswer; i++) {
+			if (i === num5MarkToAnswer - 1) {
+				// Last question gets remaining marks (1-5)
+				const lastMarks = Math.min(5, Math.max(1, marksToDistribute));
+				fiveMarkDistribution.push(lastMarks);
+			} else {
+				// Random marks between 1-5, but ensure we have enough for remaining questions
+				const minMarks = 1;
+				const maxMarks = Math.min(
+					5,
+					marksToDistribute - (num5MarkToAnswer - i - 1)
+				);
+				const randomMarks =
+					Math.floor(Math.random() * (maxMarks - minMarks + 1)) + minMarks;
+				fiveMarkDistribution.push(randomMarks);
+				marksToDistribute -= randomMarks;
+			}
 		}
 	}
 
+	// Fill remaining 5-mark questions with 0 (unanswered)
+	for (let i = num5MarkToAnswer; i < available5MarkQuestions; i++) {
+		fiveMarkDistribution.push(0);
+	}
+
+	// Shuffle to randomize which 5-mark questions get which marks
+	shuffleArray(fiveMarkDistribution);
+
 	const totalDistributed =
-		oneMarkCount + fiveMarkDistribution.reduce((sum, mark) => sum + mark, 0);
+		oneMarkAnswered.filter((m) => m === 1).length +
+		fiveMarkDistribution.reduce((sum, mark) => sum + mark, 0);
 
 	return {
-		oneMarkCount, // Number of 1-mark questions to give
-		fiveMarkDistribution, // Array of marks for each 5-mark question
+		oneMarkAnswered, // Array of 0s and 1s indicating which questions to answer
+		fiveMarkDistribution, // Array of marks (0-5) for each 5-mark question
 		totalDistributed, // Total marks distributed
 		remainingMarks: totalMarks - totalDistributed,
 	};
@@ -142,23 +167,22 @@ function groupMarkRowsByValue() {
 /**
  * Apply marks to 1-mark question rows
  * @param {Object} marksDev - Grouped marks data
- * @param {number} oneMarkCount - Number of 1-mark questions to give marks
+ * @param {Array<number>} oneMarkAnswered - Array of 0s and 1s indicating which questions to answer
  * @returns {number} Marks given
  */
-function applyOneMarkQuestions(marksDev, oneMarkCount) {
+function applyOneMarkQuestions(marksDev, oneMarkAnswered) {
 	let marksGiven = 0;
 
 	if (marksDev["1"]) {
 		const tds = marksDev["1"].elements;
-		const shuffledTds = shuffleArray([...tds]);
 
-		shuffledTds.forEach((tds) => {
-			if (marksGiven < oneMarkCount) {
+		tds.forEach((td, index) => {
+			if (oneMarkAnswered[index] === 1) {
 				marksGiven++;
-				const markInput = tds[1].querySelector(`input[type="text"]`);
+				const markInput = td[1].querySelector(`input[type="text"]`);
 				markInput.value = 1;
 			} else {
-				const markInput = tds[2].querySelector(`input[type="checkbox"]`);
+				const markInput = td[2].querySelector(`input[type="checkbox"]`);
 				markInput.checked = true;
 				setInputLikeHuman(markInput);
 			}
@@ -171,22 +195,22 @@ function applyOneMarkQuestions(marksDev, oneMarkCount) {
 /**
  * Apply marks to 5-mark question rows
  * @param {Object} marksDev - Grouped marks data
- * @param {Array<number>} fiveMarkDistribution - Array of marks for each 5-mark question
+ * @param {Array<number>} fiveMarkDistribution - Array of marks (0-5) for each 5-mark question
  */
 function applyFiveMarkQuestions(marksDev, fiveMarkDistribution) {
 	let marksGiven = 0;
 
 	if (marksDev["5"] && fiveMarkDistribution.length > 0) {
 		const tds = marksDev["5"].elements;
-		const shuffledTds = shuffleArray([...tds]);
 
-		shuffledTds.forEach((tds, i) => {
-			if (fiveMarkDistribution[i]) {
-				marksGiven += fiveMarkDistribution[i];
-				const markInput = tds[1].querySelector(`input[type="text"]`);
-				markInput.value = fiveMarkDistribution[i];
+		tds.forEach((td, index) => {
+			const marks = fiveMarkDistribution[index];
+			if (marks && marks > 0) {
+				marksGiven += marks;
+				const markInput = td[1].querySelector(`input[type="text"]`);
+				markInput.value = marks;
 			} else {
-				const markInput = tds[2].querySelector(`input[type="checkbox"]`);
+				const markInput = td[2].querySelector(`input[type="checkbox"]`);
 				markInput.checked = true;
 				setInputLikeHuman(markInput);
 			}
@@ -198,16 +222,21 @@ function applyFiveMarkQuestions(marksDev, fiveMarkDistribution) {
 
 /**
  * Main function to apply marks to all questions based on distribution
- * @param {Object} distribution - Distribution object from calculateMarksDistribution
+ * @param {number} totalMarks - Total marks to distribute
  */
-function applyMarksToQuestions(distribution) {
-	const { oneMarkCount, fiveMarkDistribution } = distribution;
-
+function applyMarksToQuestions(totalMarks) {
 	// Group mark rows by value
 	const marksDev = groupMarkRowsByValue();
 
+	// Calculate distribution based on available questions
+	const distribution = calculateMarksDistribution(totalMarks, marksDev);
+
+	console.log("Marks Distribution:", distribution);
+
+	const { oneMarkAnswered, fiveMarkDistribution } = distribution;
+
 	// Apply marks to 1-mark questions
-	const oneMarksGiven = applyOneMarkQuestions(marksDev, oneMarkCount);
+	const oneMarksGiven = applyOneMarkQuestions(marksDev, oneMarkAnswered);
 
 	// Apply marks to 5-mark questions
 	const fiveMarksGiven = applyFiveMarkQuestions(
@@ -251,8 +280,8 @@ async function setupCA3ScriptEvaluation() {
 		const maxMarks = parseInt(SETTINGS?.MAX_MARKS_RANGE_CA3) || 24;
 		const minMarks = parseInt(SETTINGS?.MIN_MARKS_RANGE_CA3) || 18;
 		const perPageMarks = parseFloat(SETTINGS?.CA3_PER_PAGE_MARKS) || 1;
-		const marksIn30Words = parseInt(SETTINGS?.CA3_MARKS_IN_30_WORDS) || 2;
-		const addRandom = SETTINGS?.CA3_ADD_RANDOM || false;
+		const marksIn30Words = parseFloat(SETTINGS?.CA3_MARKS_IN_30_WORDS) || 1.5;
+		const addRandom = SETTINGS?.CA3_ADD_RANDOM || true;
 
 		console.log("SETTINGS: ", SETTINGS);
 
@@ -272,16 +301,12 @@ async function setupCA3ScriptEvaluation() {
 
 		console.log("Calculated Total Marks:", totalMarks);
 
-		// Calculate marks distribution
-		const distribution = calculateMarksDistribution(totalMarks);
-		console.log("Marks Distribution:", distribution);
-
-		// Apply marks to questions
-		const marksGiven = applyMarksToQuestions(distribution);
-		console.log(marksGiven);
+		// Apply marks to questions (distribution calculated inside)
+		const marksGiven = applyMarksToQuestions(totalMarks);
+		console.log("Total Marks Given:", marksGiven);
 
 		// Auto-save if enabled
-		const autoSave = SETTINGS?.CA3_AUTO_SAVE;
+		const autoSave = SETTINGS?.CA3_AUTO_SAVE || false;
 		const waitTime = parseInt(SETTINGS?.CA3_WAIT_TIME) || 30;
 
 		await wait(2000);
@@ -333,7 +358,6 @@ async function setupCA3ScriptEvaluation() {
 
 		return {
 			totalMarks,
-			distribution,
 			marksGiven,
 			pageCount,
 		};

@@ -12,22 +12,29 @@ runtimeOnMessage(
 					const wait = (ms) =>
 						new Promise((resolve) => setTimeout(resolve, ms));
 
-					// Simple straight line drag (much faster)
+					// Improved straight line drag with better accuracy
 					const simulateStraightDrag = async (canvas) => {
 						const rect = canvas.getBoundingClientRect();
 						const { width, height } = rect;
 
-						const moveW = Math.random() * 10 + 60; // Random 60-70
-						const moveH = Math.random() * 20 + 40; // Random 40-60
+						// More controlled random movement
+						const moveW = Math.random() * 30 + 80; // Random 80-110
+						const moveH = Math.random() * 30 + 60; // Random 60-90
 
+						// Calculate start and end points within canvas bounds
+						const margin = 20; // Keep away from edges
 						const startX = Math.floor(
-							width / 2 + Math.random() * 100 + moveW
+							margin + Math.random() * (width / 3)
 						);
 						const startY = Math.floor(
-							height / 3 + Math.random() * 200 + moveH
+							margin + Math.random() * (height / 3)
 						);
-						const endX = Math.floor(startX + moveW);
-						const endY = Math.floor(startY + moveH);
+						const endX = Math.floor(
+							Math.min(startX + moveW, width - margin)
+						);
+						const endY = Math.floor(
+							Math.min(startY + moveH, height - margin)
+						);
 
 						const toClient = (x, y) => ({
 							x: rect.left + x,
@@ -38,36 +45,62 @@ runtimeOnMessage(
 						const end = toClient(endX, endY);
 
 						const fire = (type, x, y, buttons = 1) => {
-							canvas.dispatchEvent(
-								new MouseEvent(type, {
-									view: window,
-									bubbles: true,
-									cancelable: true,
-									clientX: x,
-									clientY: y,
-									buttons,
-									button: type === "mouseup" ? 0 : 0,
-									relatedTarget: null,
-									screenX: x,
-									screenY: y,
-								})
-							);
+							const event = new MouseEvent(type, {
+								view: window,
+								bubbles: true,
+								cancelable: true,
+								clientX: x,
+								clientY: y,
+								buttons,
+								button: type === "mouseup" ? 0 : 0,
+								relatedTarget: canvas,
+								screenX: window.screenX + x,
+								screenY: window.screenY + y,
+								detail: type === "click" ? 1 : 0,
+								pointerType: "mouse",
+							});
+							canvas.dispatchEvent(event);
+							return event;
 						};
 
-						// Fire events: mousedown -> mousemove -> mouseup -> click
-						fire("mousedown", start.x, start.y);
+						// More realistic mouse event sequence
+						// 1. Mouse enters canvas
+						fire("mouseenter", start.x, start.y, 0);
 						await wait(10);
-						fire("mousemove", end.x + 5, end.y + 5);
-						await wait(20);
-						fire("mousemove", end.x - 5, end.y - 5);
-						await wait(20);
-						fire("mousemove", end.x, end.y);
-						await wait(20);
-						fire("mouseup", end.x, end.y, 0);
-						await wait(10);
-						fire("click", end.x, end.y, 0);
-					};
 
+						// 2. Mouse moves to start position
+						fire("mousemove", start.x, start.y, 0);
+						await wait(20);
+
+						// 3. Mouse down (start drawing)
+						fire("mousedown", start.x, start.y, 1);
+						await wait(30);
+
+						// 4. Drag with multiple intermediate points for smoother path
+						const steps = 8; // More steps for smoother drag
+						for (let i = 1; i <= steps; i++) {
+							const progress = i / steps;
+							const currentX = start.x + (end.x - start.x) * progress;
+							const currentY = start.y + (end.y - start.y) * progress;
+							fire("mousemove", currentX, currentY, 1);
+							await wait(15);
+						}
+
+						// 5. Final position
+						fire("mousemove", end.x, end.y, 1);
+						await wait(30);
+
+						// 6. Mouse up (finish drawing)
+						fire("mouseup", end.x, end.y, 0);
+						await wait(20);
+
+						// 7. Click to confirm
+						fire("click", end.x, end.y, 0);
+						await wait(10);
+
+						// 8. Mouse leaves
+						fire("mouseleave", end.x, end.y, 0);
+					};
 					const pdfSize = +document.querySelector(
 						`input[name="pageNumber"] ~ label`
 					).innerText;
@@ -92,17 +125,12 @@ runtimeOnMessage(
 					tempCanvas.width = pageWidth;
 					tempCanvas.height = (pageHeight + spacing) * pdfSize - spacing;
 
-					// Fill with white background
-					ctx.fillStyle = "#ffffff";
-					ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-					// Click tick button once at the start
 					tickButton.click();
 					await wait(100);
 
 					// Collect all page images into one canvas
 					for (let i = 0; i < pdfSize; i++) {
-						await wait(600);
+						await wait(2000);
 
 						// Draw current page onto combined canvas
 						const yOffset = i * (pageHeight + spacing);
@@ -114,8 +142,8 @@ runtimeOnMessage(
 						await wait(600);
 					}
 
-					// Create a smaller canvas (reduce resolution by 20%)
-					const scale = 0.8; // Reduce to 80% size
+					// Create a smaller canvas (reduce resolution by 50%)
+					const scale = 0.5; // Reduce to 50% size
 					const smallCanvas = document.createElement("canvas");
 					smallCanvas.width = Math.floor(tempCanvas.width * scale);
 					smallCanvas.height = Math.floor(tempCanvas.height * scale);
@@ -176,7 +204,6 @@ runtimeOnMessage(
 						format: "PNG Binary B&W (Threshold)",
 						threshold: threshold,
 					});
-               
 
 					return {
 						combinedImage: combinedImageData,
@@ -191,7 +218,6 @@ runtimeOnMessage(
 
 			console.log("Injection result:", result);
 
-
 			if (!result || !result[0]?.result) {
 				throw new Error("Script execution failed");
 			}
@@ -200,11 +226,11 @@ runtimeOnMessage(
 
 			// Start OCR timing
 			const ocrStartTime = performance.now();
-         console.log("Starting OCR processing...");
-         
-         tabSendMessage(tabId, "B_C_START_BIG_LOADING", {});
+			console.log("Starting OCR processing...");
+
+			tabSendMessage(tabId, "B_C_START_BIG_LOADING", {});
 			const ocrResult = await PROCESS_PDF_IMAGES_OCR(combinedImage);
-         tabSendMessage(tabId, "B_C_STOP_BIG_LOADING", {});
+			tabSendMessage(tabId, "B_C_STOP_BIG_LOADING", {});
 
 			// Calculate OCR duration
 			const ocrEndTime = performance.now();
@@ -212,11 +238,11 @@ runtimeOnMessage(
 			console.log(`OCR completed in ${ocrDuration} seconds`);
 			console.log("OCR Result:", ocrResult);
 
-         sendResponse({
-            success: true,
-            text: ocrResult?.result?.text || "",
-            pageCount: ocrResult?.result?.pageCount || 0,
-         });
+			sendResponse({
+				success: true,
+				text: ocrResult?.result?.text || "",
+				pageCount: ocrResult?.result?.pageCount || 0,
+			});
 		} catch (error) {
 			console.log("Script injection failed:", error);
 			sendResponse({ success: false, error: error.message });
@@ -304,13 +330,13 @@ runtimeOnMessage(
 		try {
 			const tabId = sender.tab.id;
 
-         const result = await injectScriptInContentPage(tabId, () => {
-            function setClickLikeHuman(element) {
+			const result = await injectScriptInContentPage(tabId, () => {
+				function setClickLikeHuman(element) {
 					const event = new Event("change", { bubbles: true });
 					element?.click();
 					element?.dispatchEvent(event);
 				}
-            
+
 				setTimeout(() => {
 					const saveButton = document.querySelector("a.btn.btn-danger");
 					if (saveButton) {
@@ -329,8 +355,8 @@ runtimeOnMessage(
 					} else {
 						console.warn("Save button not found");
 					}
-            }, 1000);
-            
+				}, 1000);
+
 				return true;
 			});
 
