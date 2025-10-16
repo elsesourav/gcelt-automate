@@ -95,7 +95,9 @@ runtimeOnMessage(
 					tickButton.click();
 					await wait(100);
 
-					// Collect all page images into one canvas
+					const doubleTick =
+						localStorage.getItem("CA3_DOUBLE_TICK") === "true";
+
 					for (let i = 0; i < pdfSize; i++) {
 						await wait(2000);
 
@@ -104,9 +106,13 @@ runtimeOnMessage(
 						ctx.drawImage(canvas, 0, yOffset, pageWidth, pageHeight);
 
 						await simulateStraightDrag(canvas);
-						await wait(2000);
-						await simulateStraightDrag(canvas);
-						await wait(600);
+                  
+						if (doubleTick) {
+                     await wait(2000);
+							await simulateStraightDrag(canvas);
+						}
+                  
+                  await wait(600);
 						nextPageBtn.click();
 						await wait(600);
 					}

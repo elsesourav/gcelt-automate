@@ -8,7 +8,7 @@ function calculateTotalMarksForCA3({
 	addRandom = false,
 }) {
 	// Calculate word count (approximate)
-	const wordLength = text.trim().split(/\s+/).length;
+	const wordLength = text?.trim()?.split(/\s+/).length || 0;
 	const wordCount = wordLength * 1.8; // Adjusted for accuracy
 
 	// Calculate marks based on different criteria
@@ -36,6 +36,54 @@ function calculateTotalMarksForCA3({
 }
 
 /**
+ * Distribute marks between 1-mark and 5-mark questions using smart distribution
+ * @param {number} totalMarks - Total marks to distribute
+ * @returns {Object} Distribution of marks { oneMarks, fiveMarks }
+ */
+function distributeMarks(totalMarks) {
+	const oneMarks = [0, 0, 0, 0, 0];
+	const fiveMarks = [0, 0, 0, 0];
+
+	const SPLIT_FILL = (len, target) => {
+		const arr = new Array(len).fill(0);
+		const base = Math.floor(target / len);
+		let rem = target % len;
+
+		for (let i = 0; i < len; i++) arr[i] = base;
+		for (let i = 0; i < rem; i++) arr[i]++;
+
+		return arr;
+	};
+
+	if (totalMarks <= 0) return { oneMarks, fiveMarks };
+
+	// --- 1 MARK SECTION ---
+	let maxOne = 0;
+	if (totalMarks < 8) maxOne = Math.min(4, totalMarks);
+	else if (totalMarks < 15) maxOne = Math.min(4, Math.ceil(Math.random() * 3));
+	else if (totalMarks < 20) maxOne = Math.min(4, Math.ceil(Math.random() * 4));
+	else maxOne = 5;
+
+	for (let i = 0; i < maxOne; i++) oneMarks[i] = 1;
+
+	// --- 5 MARK SECTION ---
+	const assignedOneMarks = oneMarks.reduce((a, b) => a + b, 0);
+	const remaining = totalMarks - assignedOneMarks;
+	if (remaining <= 0) return { oneMarks, fiveMarks };
+
+	let fiveLen = 4;
+	if (remaining < 4) fiveLen = Math.min(1, 1 + Math.round(Math.random()));
+	else if (remaining < 8) fiveLen = Math.min(2, 2 + Math.round(Math.random()));
+	else if (remaining < 10) fiveLen = 3;
+	else fiveLen = 4;
+
+	const fiveSplit = SPLIT_FILL(fiveLen, remaining);
+	for (let i = 0; i < fiveSplit.length; i++) fiveMarks[i] = fiveSplit[i];
+
+	return { oneMarks, fiveMarks };
+}
+
+/**
  * Calculate marks distribution between 1-mark and 5-mark questions using randomization
  * @param {number} totalMarks - Total marks to distribute
  * @param {Object} marksDev - Grouped marks data with available questions
@@ -45,86 +93,26 @@ function calculateMarksDistribution(totalMarks, marksDev) {
 	const available1MarkQuestions = marksDev["1"]?.elements?.length || 0;
 	const available5MarkQuestions = marksDev["5"]?.elements?.length || 0;
 
-	// Maximum questions we can answer
-	const max1MarkQuestions = Math.min(5, available1MarkQuestions);
-	const max5MarkQuestions = Math.min(4, available5MarkQuestions);
+	// Get the distribution using the new algorithm
+	const { oneMarks, fiveMarks } = distributeMarks(totalMarks);
 
-	let remainingMarks = totalMarks;
-
-	// Randomly decide how many 1-mark questions to answer (0 to max)
-	const num1MarkToAnswer = Math.floor(Math.random() * (max1MarkQuestions + 1));
-
-	// Create array indicating which 1-mark questions to answer
+	// Prepare arrays with proper length based on available questions
 	const oneMarkAnswered = [];
-	for (let i = 0; i < available1MarkQuestions; i++) {
-		oneMarkAnswered.push(i < num1MarkToAnswer ? 1 : 0);
-	}
-	// Shuffle to randomize which questions get marks
-	shuffleArray(oneMarkAnswered);
-
-	// Subtract 1-mark questions from remaining marks
-	remainingMarks -= num1MarkToAnswer;
-
-	// Create random marks distribution for 5-mark questions
 	const fiveMarkDistribution = [];
 
-	if (remainingMarks > 0 && available5MarkQuestions > 0) {
-		// Try to distribute marks across MORE questions (spread it out)
-		// Calculate ideal number of questions to maximize distribution
-		const idealQuestions = Math.min(
-			max5MarkQuestions,
-			Math.max(
-				Math.ceil(remainingMarks / 5), // Minimum questions needed
-				Math.min(
-					Math.ceil(remainingMarks / 3), // Try to use more questions with avg 3 marks
-					max5MarkQuestions
-				)
-			)
-		);
-
-		const num5MarkToAnswer = idealQuestions;
-
-		// Distribute marks more evenly across questions
-		let marksToDistribute = remainingMarks;
-		const baseMarks = Math.floor(marksToDistribute / num5MarkToAnswer);
-		const extraMarks = marksToDistribute % num5MarkToAnswer;
-
-		for (let i = 0; i < num5MarkToAnswer; i++) {
-			// Give base marks + 1 extra to some questions
-			let marks = baseMarks + (i < extraMarks ? 1 : 0);
-
-			// Ensure marks are between 1-5
-			marks = Math.max(1, Math.min(5, marks));
-
-			// Add small random variation (±1) for more natural distribution
-			const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-			marks = Math.max(1, Math.min(5, marks + variation));
-
-			fiveMarkDistribution.push(marks);
-		}
-
-		// Adjust to match exact total if variation caused discrepancy
-		const currentTotal = fiveMarkDistribution.reduce((sum, m) => sum + m, 0);
-		const diff = marksToDistribute - currentTotal;
-
-		if (diff !== 0) {
-			// Adjust the last question to match exact total
-			const lastIndex = fiveMarkDistribution.length - 1;
-			fiveMarkDistribution[lastIndex] = Math.max(
-				1,
-				Math.min(5, fiveMarkDistribution[lastIndex] + diff)
-			);
-		}
+	// Fill 1-mark array and shuffle
+	for (let i = 0; i < available1MarkQuestions; i++) {
+		oneMarkAnswered.push(i < oneMarks.length ? oneMarks[i] : 0);
 	}
+	shuffleArray(oneMarkAnswered);
 
-	// Fill remaining 5-mark questions with 0 (unanswered)
-	for (let i = fiveMarkDistribution.length; i < available5MarkQuestions; i++) {
-		fiveMarkDistribution.push(0);
+	// Fill 5-mark array and shuffle
+	for (let i = 0; i < available5MarkQuestions; i++) {
+		fiveMarkDistribution.push(i < fiveMarks.length ? fiveMarks[i] : 0);
 	}
-
-	// Shuffle to randomize which 5-mark questions get which marks
 	shuffleArray(fiveMarkDistribution);
 
+	// Calculate totals
 	const totalDistributed =
 		oneMarkAnswered.filter((m) => m === 1).length +
 		fiveMarkDistribution.reduce((sum, mark) => sum + mark, 0);
@@ -195,15 +183,22 @@ function applyOneMarkQuestions(marksDev, oneMarkAnswered) {
 	if (marksDev["1"]) {
 		const tds = marksDev["1"].elements;
 
+		// First pass: Apply marks to answered questions
 		tds.forEach((td, index) => {
 			if (oneMarkAnswered[index] === 1) {
 				marksGiven++;
 				const markInput = td[1].querySelector(`input[type="text"]`);
 				markInput.value = 1;
-			} else {
-				const markInput = td[2].querySelector(`input[type="checkbox"]`);
-				markInput.checked = true;
 				setInputLikeHuman(markInput);
+			}
+		});
+
+		// Second pass: Check checkboxes for remaining (unanswered) questions
+		tds.forEach((td, index) => {
+			if (oneMarkAnswered[index] === 0) {
+				const checkboxInput = td[2].querySelector(`input[type="checkbox"]`);
+				checkboxInput.checked = true;
+				setInputLikeHuman(checkboxInput);
 			}
 		});
 	}
@@ -222,16 +217,24 @@ function applyFiveMarkQuestions(marksDev, fiveMarkDistribution) {
 	if (marksDev["5"] && fiveMarkDistribution.length > 0) {
 		const tds = marksDev["5"].elements;
 
+		// First pass: Apply marks to answered questions (marks > 0)
 		tds.forEach((td, index) => {
 			const marks = fiveMarkDistribution[index];
 			if (marks && marks > 0) {
 				marksGiven += marks;
 				const markInput = td[1].querySelector(`input[type="text"]`);
 				markInput.value = marks;
-			} else {
-				const markInput = td[2].querySelector(`input[type="checkbox"]`);
-				markInput.checked = true;
 				setInputLikeHuman(markInput);
+			}
+		});
+
+		// Second pass: Check checkboxes for remaining (unanswered) questions
+		tds.forEach((td, index) => {
+			const marks = fiveMarkDistribution[index];
+			if (!marks || marks === 0) {
+				const checkboxInput = td[2].querySelector(`input[type="checkbox"]`);
+				checkboxInput.checked = true;
+				setInputLikeHuman(checkboxInput);
 			}
 		});
 	}
@@ -300,11 +303,19 @@ async function setupCA3ScriptEvaluation() {
 		const minMarks = parseInt(SETTINGS?.MIN_MARKS_RANGE_CA3) || 18;
 		const perPageMarks = parseFloat(SETTINGS?.CA3_PER_PAGE_MARKS) || 1;
 		const marksIn30Words = parseFloat(SETTINGS?.CA3_MARKS_IN_30_WORDS) || 1.5;
+		const waitTime = parseInt(SETTINGS?.CA3_WAIT_TIME) || 30;
 		const addRandom = SETTINGS?.CA3_ADD_RANDOM || true;
+		const autoSave = SETTINGS?.CA3_AUTO_SAVE || false;
+		const doubleTick = SETTINGS?.CA3_DOUBLE_TICK || false;
+
+		localStorage.setItem("CA3_DOUBLE_TICK", doubleTick);
 
 		console.log("SETTINGS: ", SETTINGS);
 
 		const pdfPages = await getCA3PdfTextAndDoTickMarks();
+
+		console.log("Get Text and Page Count");
+
 		const { text, pageCount } = pdfPages;
 
 		// Calculate total marks based on text and pages
@@ -323,10 +334,6 @@ async function setupCA3ScriptEvaluation() {
 		// Apply marks to questions (distribution calculated inside)
 		const marksGiven = applyMarksToQuestions(totalMarks);
 		console.log("Total Marks Given:", marksGiven);
-
-		// Auto-save if enabled
-		const autoSave = SETTINGS?.CA3_AUTO_SAVE || false;
-		const waitTime = parseInt(SETTINGS?.CA3_WAIT_TIME) || 30;
 
 		await wait(2000);
 
