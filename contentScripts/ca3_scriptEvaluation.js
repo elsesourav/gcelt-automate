@@ -65,41 +65,60 @@ function calculateMarksDistribution(totalMarks, marksDev) {
 	// Subtract 1-mark questions from remaining marks
 	remainingMarks -= num1MarkToAnswer;
 
-	// Randomly decide how many 5-mark questions to answer
-	const num5MarkToAnswer = Math.min(
-		max5MarkQuestions,
-		Math.ceil(remainingMarks / 5)
-	);
-
 	// Create random marks distribution for 5-mark questions
 	const fiveMarkDistribution = [];
 
-	if (num5MarkToAnswer > 0 && remainingMarks > 0) {
-		// Distribute remaining marks across questions
+	if (remainingMarks > 0 && available5MarkQuestions > 0) {
+		// Try to distribute marks across MORE questions (spread it out)
+		// Calculate ideal number of questions to maximize distribution
+		const idealQuestions = Math.min(
+			max5MarkQuestions,
+			Math.max(
+				Math.ceil(remainingMarks / 5), // Minimum questions needed
+				Math.min(
+					Math.ceil(remainingMarks / 3), // Try to use more questions with avg 3 marks
+					max5MarkQuestions
+				)
+			)
+		);
+
+		const num5MarkToAnswer = idealQuestions;
+
+		// Distribute marks more evenly across questions
 		let marksToDistribute = remainingMarks;
+		const baseMarks = Math.floor(marksToDistribute / num5MarkToAnswer);
+		const extraMarks = marksToDistribute % num5MarkToAnswer;
 
 		for (let i = 0; i < num5MarkToAnswer; i++) {
-			if (i === num5MarkToAnswer - 1) {
-				// Last question gets remaining marks (1-5)
-				const lastMarks = Math.min(5, Math.max(1, marksToDistribute));
-				fiveMarkDistribution.push(lastMarks);
-			} else {
-				// Random marks between 1-5, but ensure we have enough for remaining questions
-				const minMarks = 1;
-				const maxMarks = Math.min(
-					5,
-					marksToDistribute - (num5MarkToAnswer - i - 1)
-				);
-				const randomMarks =
-					Math.floor(Math.random() * (maxMarks - minMarks + 1)) + minMarks;
-				fiveMarkDistribution.push(randomMarks);
-				marksToDistribute -= randomMarks;
-			}
+			// Give base marks + 1 extra to some questions
+			let marks = baseMarks + (i < extraMarks ? 1 : 0);
+
+			// Ensure marks are between 1-5
+			marks = Math.max(1, Math.min(5, marks));
+
+			// Add small random variation (±1) for more natural distribution
+			const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+			marks = Math.max(1, Math.min(5, marks + variation));
+
+			fiveMarkDistribution.push(marks);
+		}
+
+		// Adjust to match exact total if variation caused discrepancy
+		const currentTotal = fiveMarkDistribution.reduce((sum, m) => sum + m, 0);
+		const diff = marksToDistribute - currentTotal;
+
+		if (diff !== 0) {
+			// Adjust the last question to match exact total
+			const lastIndex = fiveMarkDistribution.length - 1;
+			fiveMarkDistribution[lastIndex] = Math.max(
+				1,
+				Math.min(5, fiveMarkDistribution[lastIndex] + diff)
+			);
 		}
 	}
 
 	// Fill remaining 5-mark questions with 0 (unanswered)
-	for (let i = num5MarkToAnswer; i < available5MarkQuestions; i++) {
+	for (let i = fiveMarkDistribution.length; i < available5MarkQuestions; i++) {
 		fiveMarkDistribution.push(0);
 	}
 

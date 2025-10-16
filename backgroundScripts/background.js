@@ -12,29 +12,21 @@ runtimeOnMessage(
 					const wait = (ms) =>
 						new Promise((resolve) => setTimeout(resolve, ms));
 
-					// Improved straight line drag with better accuracy
 					const simulateStraightDrag = async (canvas) => {
 						const rect = canvas.getBoundingClientRect();
 						const { width, height } = rect;
 
-						// More controlled random movement
-						const moveW = Math.random() * 30 + 80; // Random 80-110
-						const moveH = Math.random() * 30 + 60; // Random 60-90
+						const moveW = Math.random() * 10 + 60; // Random 60-70
+						const moveH = Math.random() * 20 + 40; // Random 40-60
 
-						// Calculate start and end points within canvas bounds
-						const margin = 20; // Keep away from edges
 						const startX = Math.floor(
-							margin + Math.random() * (width / 3)
+							width / 2 + Math.random() * 100 + moveW
 						);
 						const startY = Math.floor(
-							margin + Math.random() * (height / 3)
+							height / 3 + Math.random() * 200 + moveH
 						);
-						const endX = Math.floor(
-							Math.min(startX + moveW, width - margin)
-						);
-						const endY = Math.floor(
-							Math.min(startY + moveH, height - margin)
-						);
+						const endX = Math.floor(startX + moveW);
+						const endY = Math.floor(startY + moveH);
 
 						const toClient = (x, y) => ({
 							x: rect.left + x,
@@ -45,61 +37,36 @@ runtimeOnMessage(
 						const end = toClient(endX, endY);
 
 						const fire = (type, x, y, buttons = 1) => {
-							const event = new MouseEvent(type, {
-								view: window,
-								bubbles: true,
-								cancelable: true,
-								clientX: x,
-								clientY: y,
-								buttons,
-								button: type === "mouseup" ? 0 : 0,
-								relatedTarget: canvas,
-								screenX: window.screenX + x,
-								screenY: window.screenY + y,
-								detail: type === "click" ? 1 : 0,
-								pointerType: "mouse",
-							});
-							canvas.dispatchEvent(event);
-							return event;
+							canvas.dispatchEvent(
+								new MouseEvent(type, {
+									view: window,
+									bubbles: true,
+									cancelable: true,
+									clientX: x,
+									clientY: y,
+									buttons,
+									button: type === "mouseup" ? 0 : 0,
+									relatedTarget: null,
+									screenX: x,
+									screenY: y,
+								})
+							);
 						};
 
-						// More realistic mouse event sequence
-						// 1. Mouse enters canvas
-						fire("mouseenter", start.x, start.y, 0);
-						await wait(10);
-
-						// 2. Mouse moves to start position
-						fire("mousemove", start.x, start.y, 0);
-						await wait(20);
-
-						// 3. Mouse down (start drawing)
+						// Mousedown at start position
 						fire("mousedown", start.x, start.y, 1);
-						await wait(30);
+						await wait(50);
 
-						// 4. Drag with multiple intermediate points for smoother path
-						const steps = 8; // More steps for smoother drag
-						for (let i = 1; i <= steps; i++) {
-							const progress = i / steps;
-							const currentX = start.x + (end.x - start.x) * progress;
-							const currentY = start.y + (end.y - start.y) * progress;
-							fire("mousemove", currentX, currentY, 1);
-							await wait(15);
-						}
-
-						// 5. Final position
-						fire("mousemove", end.x, end.y, 1);
-						await wait(30);
-
-						// 6. Mouse up (finish drawing)
+						// Mouseup at end position
 						fire("mouseup", end.x, end.y, 0);
 						await wait(20);
 
-						// 7. Click to confirm
-						fire("click", end.x, end.y, 0);
+						// Double click
+						fire("dblclick", end.x, end.y, 0);
 						await wait(10);
 
-						// 8. Mouse leaves
-						fire("mouseleave", end.x, end.y, 0);
+						// Trigger change event
+						canvas.dispatchEvent(new Event("change", { bubbles: true }));
 					};
 					const pdfSize = +document.querySelector(
 						`input[name="pageNumber"] ~ label`
@@ -136,6 +103,8 @@ runtimeOnMessage(
 						const yOffset = i * (pageHeight + spacing);
 						ctx.drawImage(canvas, 0, yOffset, pageWidth, pageHeight);
 
+						await simulateStraightDrag(canvas);
+						await wait(2000);
 						await simulateStraightDrag(canvas);
 						await wait(600);
 						nextPageBtn.click();
