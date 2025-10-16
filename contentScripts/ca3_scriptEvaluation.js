@@ -50,7 +50,15 @@ function distributeMarks(totalMarks) {
 		let rem = target % len;
 
 		for (let i = 0; i < len; i++) arr[i] = base;
-		for (let i = 0; i < rem; i++) arr[i]++;
+
+		// Distribute the remainder randomly among the available slots
+		if (rem > 0) {
+			const indices = Array.from({ length: len }, (_, i) => i);
+			shuffleArray(indices);
+			for (let i = 0; i < rem; i++) {
+				arr[indices[i]]++;
+			}
+		}
 
 		return arr;
 	};
@@ -60,8 +68,10 @@ function distributeMarks(totalMarks) {
 	// --- 1 MARK SECTION ---
 	let maxOne = 0;
 	if (totalMarks < 8) maxOne = Math.min(3, totalMarks);
-	else if (totalMarks < 15) maxOne = Math.min(4, 3 + Math.round(Math.random()));
-	else if (totalMarks < 20) maxOne = Math.min(5, 4 + Math.round(Math.random()));
+	else if (totalMarks < 12)
+		maxOne = Math.min(4, 3 + Math.round(Math.random()));
+	else if (totalMarks < 20)
+		maxOne = Math.min(5, 4 + Math.round(Math.random()));
 	else maxOne = 5;
 
 	for (let i = 0; i < maxOne; i++) oneMarks[i] = 1;
@@ -89,9 +99,11 @@ function distributeMarks(totalMarks) {
  * @param {Object} marksDev - Grouped marks data with available questions
  * @returns {Object} Distribution of marks { oneMarkAnswered, fiveMarkDistribution }
  */
-function calculateMarksDistribution(totalMarks, marksDev) {
+function calculateMarksDistribution(totalMarks, marksDev, options = {}) {
 	const available1MarkQuestions = marksDev["1"]?.elements?.length || 0;
 	const available5MarkQuestions = marksDev["5"]?.elements?.length || 0;
+
+	const giveBySerial = !!options.giveBySerial;
 
 	// Get the distribution using the new algorithm
 	const { oneMarks, fiveMarks } = distributeMarks(totalMarks);
@@ -100,17 +112,21 @@ function calculateMarksDistribution(totalMarks, marksDev) {
 	const oneMarkAnswered = [];
 	const fiveMarkDistribution = [];
 
-	// Fill 1-mark array and shuffle
+	// Fill 1-mark array
 	for (let i = 0; i < available1MarkQuestions; i++) {
 		oneMarkAnswered.push(i < oneMarks.length ? oneMarks[i] : 0);
 	}
-	shuffleArray(oneMarkAnswered);
 
-	// Fill 5-mark array and shuffle
+	// If not giving by serial, shuffle to randomize positions
+	if (!giveBySerial) shuffleArray(oneMarkAnswered);
+
+	// Fill 5-mark array
 	for (let i = 0; i < available5MarkQuestions; i++) {
 		fiveMarkDistribution.push(i < fiveMarks.length ? fiveMarks[i] : 0);
 	}
-	shuffleArray(fiveMarkDistribution);
+
+	// If not giving by serial, shuffle to randomize positions
+	if (!giveBySerial) shuffleArray(fiveMarkDistribution);
 
 	// Calculate totals
 	const totalDistributed =
@@ -246,12 +262,16 @@ function applyFiveMarkQuestions(marksDev, fiveMarkDistribution) {
  * Main function to apply marks to all questions based on distribution
  * @param {number} totalMarks - Total marks to distribute
  */
-function applyMarksToQuestions(totalMarks) {
+function applyMarksToQuestions(totalMarks, options = {}) {
 	// Group mark rows by value
 	const marksDev = groupMarkRowsByValue();
 
 	// Calculate distribution based on available questions
-	const distribution = calculateMarksDistribution(totalMarks, marksDev);
+	const distribution = calculateMarksDistribution(
+		totalMarks,
+		marksDev,
+		options
+	);
 
 	console.log("Marks Distribution:", distribution);
 
@@ -307,6 +327,7 @@ async function setupCA3ScriptEvaluation() {
 		const addRandom = SETTINGS?.CA3_ADD_RANDOM || true;
 		const autoSave = SETTINGS?.CA3_AUTO_SAVE || false;
 		const doubleTick = SETTINGS?.CA3_DOUBLE_TICK || false;
+		const giveBySerial = SETTINGS?.CA3_GIVE_BY_SERIAL || false;
 
 		localStorage.setItem("CA3_DOUBLE_TICK", doubleTick);
 
@@ -332,7 +353,7 @@ async function setupCA3ScriptEvaluation() {
 		console.log("Calculated Total Marks:", totalMarks);
 
 		// Apply marks to questions (distribution calculated inside)
-		const marksGiven = applyMarksToQuestions(totalMarks);
+		const marksGiven = applyMarksToQuestions(totalMarks, { giveBySerial });
 		console.log("Total Marks Given:", marksGiven);
 
 		await wait(2000);

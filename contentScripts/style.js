@@ -203,7 +203,7 @@ const style = `
       width: 100vw;
       height: 100vh;
       background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(1px);
       display: flex;
       justify-content: center;
       align-items: center;
