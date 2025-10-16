@@ -59,9 +59,9 @@ function distributeMarks(totalMarks) {
 
 	// --- 1 MARK SECTION ---
 	let maxOne = 0;
-	if (totalMarks < 8) maxOne = Math.min(4, totalMarks);
-	else if (totalMarks < 15) maxOne = Math.min(4, Math.ceil(Math.random() * 3));
-	else if (totalMarks < 20) maxOne = Math.min(4, Math.ceil(Math.random() * 4));
+	if (totalMarks < 8) maxOne = Math.min(3, totalMarks);
+	else if (totalMarks < 15) maxOne = Math.min(4, 3 + Math.round(Math.random()));
+	else if (totalMarks < 20) maxOne = Math.min(5, 4 + Math.round(Math.random()));
 	else maxOne = 5;
 
 	for (let i = 0; i < maxOne; i++) oneMarks[i] = 1;
