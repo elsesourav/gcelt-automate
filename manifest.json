@@ -1,6 +1,6 @@
 {
    "name": "GCELT Automating",
-   "version": "1.2.5",
+   "version": "1.2.6",
    "description": "Automates PDF uploads, form filling, and answer sheet checking with auto-marking for GCELT faculty. (©SouravBarui2025)",
    "manifest_version": 3,
    "permissions": [
